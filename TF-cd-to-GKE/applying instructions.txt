@@ -1,0 +1,22 @@
+1. Apply infrastructure (only gke related, *without* the node pool resource cuz it makes problems):
+
+    terraform apply \
+    -target=google_compute_network.vpc \
+    -target=google_compute_subnetwork.subnet \
+    -target=google_container_cluster.primary
+
+# The reason node pool is not included here is that terraform insists on gke cluster credentials before it creates a node pool setting for it, 
+  kind of makes sense now that I write it out normally oops
+
+2. Connect to the created gke cluster manually ig, like this command but with the right gke name and region, copy it from the gke platform:
+    gcloud container clusters get-credentials automated-lodge-449109-b9-gke --region us-central1
+
+# terraform just needs the gke cluster credentials in the work environment, so here we connect 
+
+3. Apply the rest:
+    terraform apply 
+
+# Another side note - reapplying the rest of the .tf files (like deploy-spacecapy.tf) won't work unless I destroy the node pool 
+  and reapply it's .tf again within 'the terraform apply' command... Not very automatic and devopsy I'd say so probably not the best practice.
+  Anyways deployment is going to handled with helm and in the final version with ArgoCD, 
+  and not a .tf file that applies a hard-coded yaml like deploy-spacecapy 

@@ -1,0 +1,47 @@
+# version: '3.8' # version of "docker compose file" format
+
+services: 
+  web:
+    # build: . # build the web app image (by web i mean runs transfers data to a certain port, accessed via some browser)
+    # builds with the Dockerfile as usual
+    # image: sashafefler/flaskapp # better practice to specify a name for the image we're building here 
+    # image: sashafefler/spacecapybara:v6 # getting the image from dockerHub now instead of builiding the app locally every time
+    image: sashafefler/spacecapybara:${VERSION}
+    ports: # run a container with the imgae built, with -p 5002:5002
+      - "${WEB_PORT}:${WEB_PORT}" 
+    volumes: # like COPY, saves the images apps and stuff to  the containers /app dir. 
+    # UNLIKE COPY, this option BINDS the the current directory (.) in the host machine to 
+    # the directory /app in the container machine, so it's synchronized in real time! 
+    # No need to rebuild the image to see the changes in original code! 
+    # at least that's what i got from chatgpt
+      - .:/app
+    environment:
+      - FLASK_ENV=${FLASK_ENV}
+      - MYSQL_HOST=${MYSQL_HOST}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - WEB_PORT=${WEB_PORT} # sukaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa blyat' yobaniy v rot etogo chatgpt blyat' ichpachmak nahuy s huya li on takoy tupoy blyat' ya poshla samoubyus nahuy ya yebala ego v rot 
+    depends_on:
+      - db
+
+  # running a mysql container 
+  db: # builds and runs a database container, ig it's different 
+    image: mysql:8.0  #pulling an existing image from dockerhub/local
+    container_name: mysql_container 
+    restart: always # if the container stops or crashes or whatever, always restart it
+    environment: # environment variables required for a myswl database
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "${SQL_PORT}:3306"
+    volumes: # mounting the db's data dir inside the container, to an outside volume
+      - db_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro # Mount the init.sql file
+
+
+# an outside volume to store the db's data in
+volumes:
+  db_data:

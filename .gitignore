@@ -1,0 +1,45 @@
+# .env
+# General files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+*.bak
+*.tmp
+
+# Python virtual environments
+.env
+venv/
+.Python
+
+# IDE and editor-specific
+.vscode/
+.idea/
+*.iml
+
+# Terraform files
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfvars
+.terraform.lock.hcl
+
+# Docker-specific
+Dockerrun.aws.json
+
+# Database credentials and secrets
+*.ini
+*.cfg
+# *.yaml
+# *.yml
+*.json
+
+# Exclude compiled output
+build/
+dist/
+
+# actually mine
+# k8sDeployment.yaml
+init.sql
+# version.txt

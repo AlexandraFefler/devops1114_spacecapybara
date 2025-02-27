@@ -1,0 +1,157 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: init-mysql-job
+spec:
+  backoffLimit: 4
+  template:
+    spec:
+      containers:
+      - name: init-mysql
+        image: mysql:8.0
+        command:
+        - sh
+        - -c
+        - |
+          echo "Waiting for MySQL to be ready..."
+          until mysqladmin ping -h mysql-service --silent; do
+            echo "Waiting for MySQL...";
+            sleep 3;
+          done;
+          echo "Initializing database..."
+          mysql -h mysql-service -u root -padmin < /docker-entrypoint-initdb.d/init.sql
+        volumeMounts:
+        - name: init-sql-volume
+          mountPath: /docker-entrypoint-initdb.d/
+      restartPolicy: OnFailure
+      volumes:
+      - name: init-sql-volume
+        configMap:
+          name: init-sql-config
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+  labels:
+    app: mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:8.0
+        ports:
+        - containerPort: 3306
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: "admin"
+        - name: MYSQL_DATABASE
+          value: "mydatabase"
+        - name: MYSQL_USER
+          value: "user"
+        - name: MYSQL_PASSWORD
+          value: "password"
+        volumeMounts:
+        - name: mysql-persistent-storage
+          mountPath: /var/lib/mysql
+        readinessProbe:
+          exec:
+            command:
+            - mysqladmin
+            - ping
+            - "-h"
+            - "localhost"
+          initialDelaySeconds: 10
+          periodSeconds: 5
+      volumes:
+      - name: mysql-persistent-storage
+        emptyDir: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: space-capybara-web
+  labels:
+    app: space-capybara
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: space-capybara
+  template:
+    metadata:
+      labels:
+        app: space-capybara
+    spec:
+      initContainers:
+      - name: wait-for-mysql
+        image: mysql:8.0
+        command:
+        - sh
+        - -c
+        - |
+          echo "Waiting for MySQL to be ready..."
+          until mysqladmin ping -h mysql-service --silent; do
+            echo "Waiting for MySQL...";
+            sleep 3;
+          done;
+          echo "MySQL is up and running!"
+      containers:
+      - name: web
+        image: sashafefler/spacecapybara:v6
+        ports:
+        - containerPort: 5002
+        env:
+        - name: FLASK_ENV
+          value: "development"
+        - name: MYSQL_HOST
+          value: "mysql-service"
+        - name: MYSQL_USER
+          value: "user"
+        - name: MYSQL_PASSWORD
+          value: "password"
+        - name: MYSQL_DATABASE
+          value: "mydatabase"
+        - name: WEB_PORT
+          value: "5002"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: space-capybara-web
+  labels:
+    app: space-capybara
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "5002"
+spec:
+  selector:
+    app: space-capybara
+  ports:
+  - protocol: TCP
+    port: 5002
+    targetPort: 5002
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-service
+  labels:
+    app: mysql
+spec:
+  selector:
+    app: mysql
+  ports:
+  - protocol: TCP
+    port: 3306
+    targetPort: 3306
+  type: ClusterIP
