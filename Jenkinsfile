@@ -42,9 +42,9 @@ pipeline {
             steps {
                 echo 'Cleaning up before cloning...'
                 sh '''
-                    if [ -d "devops1114-spacecapybara" ]; then
+                    if [ -d "devops1114_spacecapybara" ]; then
                         echo "Directory exists, cleaning up..."
-                        rm -rf devops1114-spacecapybara
+                        rm -rf devops1114_spacecapybara
                     else
                         echo "Directory does not exist, no cleanup needed."
                     fi
@@ -56,46 +56,10 @@ pipeline {
             steps {
                 echo 'Cloning git repo...'
                 withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
-                    sh 'git clone https://$GITHUB_TOKEN@github.com/AlexandraFefler/devops1114-spacecapybara.git'
+                    sh 'git clone https://$GITHUB_TOKEN@github.com/AlexandraFefler/devops1114_spacecapybara.git'
                 }
             }
         }
-
-
-        // fuck this for now, it all keeps looping and I just want it to work first
-        // stage('Increment Version') {
-        //     steps {
-        //         echo 'Incrementing version...'
-        //         withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
-        //             sh '''
-        //                 # Ensure we use the correct GitHub credentials
-        //                 git remote set-url origin https://$GITHUB_TOKEN@github.com/AlexandraFefler/devops1114-spacecapybara.git
-
-        //                 # Ensure we are on the main branch
-        //                 git checkout main || git checkout -b main
-
-        //                 # Pull latest changes to avoid merge conflicts
-        //                 git pull origin main --rebase
-
-        //                 # Read current version
-        //                 CURRENT_VERSION=$(cat "$WORKSPACE/$VERSION_FILE")
-        //                 NEW_VERSION=$(echo "$CURRENT_VERSION" | awk -F. '{print $1 "." $2+1}')
-        //                 echo "$NEW_VERSION" > "$WORKSPACE/$VERSION_FILE"
-
-        //                 echo "Updated version to $NEW_VERSION"
-
-        //                 # Git setup
-        //                 git config --global user.email "sasha.fefler@gmail.com"
-        //                 git config --global user.name "AlexandraFefler"
-
-        //                 # Commit and push the version update
-        //                 git add "$WORKSPACE/$VERSION_FILE"
-        //                 git commit -m "CI: Bump version to $NEW_VERSION [skip ci]"
-        //                 git push https://$GITHUB_TOKEN@github.com/AlexandraFefler/devops1114-spacecapybara.git main
-        //             '''
-        //         }
-        //     }
-        // }
 
         stage('Increment Version') {
             steps {
@@ -124,7 +88,7 @@ pipeline {
             steps {
                 echo 'Building Docker image using docker-compose with hardcoded .env file...'
                 sh '''
-                    cd devops1114-spacecapybara
+                    cd devops1114_spacecapybara
 
                     # Create the .env file with hardcoded values
                     cat <<EOF > .env
@@ -156,10 +120,10 @@ pipeline {
         //     steps {
         //         echo 'Building Docker image...'
         //         sh '''
-        //             cd devops1114-spacecapybara
+        //             cd devops1114_spacecapybara
         //             VERSION=$(cat "$WORKSPACE/$VERSION_FILE")
-        //             docker build -t sashafefler/devops1114-spacecapybara:$VERSION .
-        //             echo "Built Docker image with tag sashafefler/devops1114-spacecapybara:$VERSION"
+        //             docker build -t sashafefler/devops1114_spacecapybara:$VERSION .
+        //             echo "Built Docker image with tag sashafefler/devops1114_spacecapybara:$VERSION"
         //         '''
         //     }
         // }
@@ -169,7 +133,7 @@ pipeline {
         //     steps {
         //         echo 'Verifying built image...'
         //         sh '''
-        //             docker images | grep "sashafefler/devops1114-spacecapybara"
+        //             docker images | grep "sashafefler/devops1114_spacecapybara"
         //         '''
         //     }
         // }
@@ -185,8 +149,8 @@ pipeline {
                         try {
                             sh '''
                                 VERSION=$(cat "$WORKSPACE/$VERSION_FILE")
-                                echo "Attempting to push: sashafefler/devops1114-spacecapybara:$VERSION"
-                                docker push sashafefler/devops1114-spacecapybara:$VERSION
+                                echo "Attempting to push: sashafefler/devops1114_spacecapybara:$VERSION"
+                                docker push sashafefler/devops1114_spacecapybara:$VERSION
                             '''
                             success = true
                         } catch (Exception e) {
@@ -206,9 +170,9 @@ pipeline {
         //         echo "Ensuring that previous containers don't run, running the Docker container..."
         //         sh '''
         //             VERSION=$(cat "$WORKSPACE/$VERSION_FILE")
-        //             docker stop devops1114-spacecapybara || true
-        //             docker rm devops1114-spacecapybara || true
-        //             docker run -d -p 8000:8000 --name devops1114-spacecapybara sashafefler/devops1114-spacecapybara:$VERSION
+        //             docker stop devops1114_spacecapybara || true
+        //             docker rm devops1114_spacecapybara || true
+        //             docker run -d -p 8000:8000 --name devops1114_spacecapybara sashafefler/devops1114_spacecapybara:$VERSION
         //         '''
         //     }
         // }
@@ -224,14 +188,14 @@ pipeline {
                 //         echo "Connecting to EC2 instance..."
                 //         ssh -o StrictHostKeyChecking=no -i $SSH_KEY ec2-user@$EC2_HOST_PROD <<EOF
                 //         echo "Stopping existing container (if any)..."
-                //         docker stop devops1114-spacecapybara || true
-                //         docker rm devops1114-spacecapybara || true
+                //         docker stop devops1114_spacecapybara || true
+                //         docker rm devops1114_spacecapybara || true
 
                 //         echo "Pulling latest Docker image..."
-                //         docker pull sashafefler/devops1114-spacecapybara:$VERSION
+                //         docker pull sashafefler/devops1114_spacecapybara:$VERSION
 
                 //         echo "Running the new container..."
-                //         docker run -d -p 8000:8000 --name devops1114-spacecapybara sashafefler/devops1114-spacecapybara:$VERSION
+                //         docker run -d -p 8000:8000 --name devops1114_spacecapybara sashafefler/devops1114_spacecapybara:$VERSION
 
                 //         echo "Deployment completed!"EOF
                 //     '''
@@ -265,8 +229,8 @@ pipeline {
                 //         try {
                 //             sh '''
                 //                 VERSION=$(cat "$WORKSPACE/$VERSION_FILE")
-                //                 echo "Attempting to push: sashafefler/devops1114-spacecapybara:latest"
-                //                 docker push sashafefler/devops1114-spacecapybara:latest
+                //                 echo "Attempting to push: sashafefler/devops1114_spacecapybara:latest"
+                //                 docker push sashafefler/devops1114_spacecapybara:latest
                 //             '''
                 //             success = true
                 //         } catch (Exception e) {
@@ -283,7 +247,7 @@ pipeline {
 
         // ssh -o StrictHostKeyChecking=no -> automatic 'yes' response to asking to confirm trusting the server we try to connect to 
         // <<EOF commands...EOF executes all the commands inside here in the ssh command (inside the connected machine) so we don't have to use ssh for every command 
-        // docker stop devops1114-spacecapybara || true -> try to stop a running container, but if such container doesn't exist and the command fails, then return true anyway cuz we got to the state we wanted which is "no such container running" 
+        // docker stop devops1114_spacecapybara || true -> try to stop a running container, but if such container doesn't exist and the command fails, then return true anyway cuz we got to the state we wanted which is "no such container running" 
         
         // thanks to pushing only the stable version as latest, deployment can now use latest to fool-proof from deploying unstable versions that haven't passed the tests (you can always see what's the latest version's number is in DH)
         // At second thought this might be a little less useful instead of always seeing the version in the code instead of "latest" for later debug or whatever... hm 
@@ -298,14 +262,14 @@ pipeline {
                 //         echo "Connecting to EC2 instance..."
                 //         ssh -o StrictHostKeyChecking=no -i $SSH_KEY ec2-user@$EC2_HOST_PROD <<EOF
                 //         echo "Stopping existing container (if any)..."
-                //         docker stop devops1114-spacecapybara || true
-                //         docker rm devops1114-spacecapybara || true
+                //         docker stop devops1114_spacecapybara || true
+                //         docker rm devops1114_spacecapybara || true
 
                 //         echo "Pulling latest Docker image..."
-                //         docker pull sashafefler/devops1114-spacecapybara:$VERSION
+                //         docker pull sashafefler/devops1114_spacecapybara:$VERSION
 
                 //         echo "Running the new container..."
-                //         docker run -d -p 8000:8000 --name devops1114-spacecapybara sashafefler/devops1114-spacecapybara:latest
+                //         docker run -d -p 8000:8000 --name devops1114_spacecapybara sashafefler/devops1114_spacecapybara:latest
 
                 //         echo "Deployment completed!"EOF
                 //     '''
