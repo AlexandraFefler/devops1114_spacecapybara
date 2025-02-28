@@ -40,17 +40,57 @@ pipeline {
         }
 
         stage('Setup Versioning') {
-            steps {
-                echo 'Setting up versioning...'
-                sh '''
-                    if [ ! -f "$WORKSPACE/$VERSION_FILE" ]; then
-                        echo "0.1" > "$WORKSPACE/$VERSION_FILE"
-                        echo "$VERSION_FILE" >> .gitignore
-                        echo "Initialized versioning at 0.0"
-                    fi
-                '''
-            }
-        }
+    steps {
+        echo 'Setting up versioning...'
+        sh '''
+            set -e  # Exit on error
+
+            VERSION_PATH="$WORKSPACE/$VERSION_FILE"
+
+            # Debug: Check if version file already exists
+            if [ -f "$VERSION_PATH" ]; then
+                echo "Version file already exists at $VERSION_PATH"
+                cat "$VERSION_PATH"
+            else
+                echo "Creating version file..."
+                echo "0.1" > "$VERSION_PATH"
+
+                # Verify it was written
+                if [ ! -s "$VERSION_PATH" ]; then
+                    echo "ERROR: Failed to create version.txt!" >&2
+                    exit 1
+                fi
+
+                echo "Initialized versioning at 0.1"
+            fi
+
+            # Ensure .gitignore exists before appending
+            if [ ! -f "$WORKSPACE/.gitignore" ]; then
+                echo ".gitignore not found, creating..."
+                touch "$WORKSPACE/.gitignore"
+            fi
+
+            # Avoid duplicate entries in .gitignore
+            grep -qxF "$VERSION_FILE" "$WORKSPACE/.gitignore" || echo "$VERSION_FILE" >> "$WORKSPACE/.gitignore"
+
+            echo "Versioning setup complete."
+        '''
+    }
+}
+
+
+        // stage('Setup Versioning') {
+        //     steps {
+        //         echo 'Setting up versioning...'
+        //         sh '''
+        //             if [ ! -f "$WORKSPACE/$VERSION_FILE" ]; then
+        //                 echo "0.1" > "$WORKSPACE/$VERSION_FILE"
+        //                 echo "$VERSION_FILE" >> .gitignore
+        //                 echo "Initialized versioning at 0.0"
+        //             fi
+        //         '''
+        //     }
+        // }
         
         stage('Clone') {
             steps {
