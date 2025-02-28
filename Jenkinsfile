@@ -25,19 +25,6 @@ pipeline {
         //     }
         // }
 
-        stage('Setup Versioning') {
-            steps {
-                echo 'Setting up versioning...'
-                sh '''
-                    if [ ! -f "$WORKSPACE/$VERSION_FILE" ]; then
-                        echo "0.1" > "$WORKSPACE/$VERSION_FILE"
-                        echo "$VERSION_FILE" >> .gitignore
-                        echo "Initialized versioning at 0.0"
-                    fi
-                '''
-            }
-        }
-
         stage('Cleanup') {
             steps {
                 echo 'Cleaning up before cloning...'
@@ -47,6 +34,19 @@ pipeline {
                         rm -rf devops1114_spacecapybara
                     else
                         echo "Directory does not exist, no cleanup needed."
+                    fi
+                '''
+            }
+        }
+
+        stage('Setup Versioning') {
+            steps {
+                echo 'Setting up versioning...'
+                sh '''
+                    if [ ! -f "$WORKSPACE/$VERSION_FILE" ]; then
+                        echo "0.1" > "$WORKSPACE/$VERSION_FILE"
+                        echo "$VERSION_FILE" >> .gitignore
+                        echo "Initialized versioning at 0.0"
                     fi
                 '''
             }
@@ -88,7 +88,16 @@ pipeline {
             steps {
                 echo 'Building Docker image using docker-compose with hardcoded .env file...'
                 sh '''
+                    set -e  # Fail pipeline on first error
+
                     cd devops1114_spacecapybara
+
+                    # Debug: Show current directory and files
+                    echo "Current Directory: $(pwd)"
+                    ls -lah
+
+                    # Ensure old .env file is removed
+                    rm -f .env
 
                     # Create the .env file with hardcoded values
                     cat <<EOF > .env
@@ -103,18 +112,28 @@ pipeline {
                     VERSION=latest
                     EOF
 
-                    echo FLASK_ENV=development > .env
+                    # Verify .env file was created
+                    echo "Contents of .env:"
+                    cat .env
 
-                    # Export version variable
+                    # Ensure version.txt exists before reading
+                    if [ ! -f "$WORKSPACE/$VERSION_FILE" ]; then
+                        echo "ERROR: Version file not found at $WORKSPACE/$VERSION_FILE" >&2
+                        exit 1
+                    fi
+
+                    # Read version file
                     export VERSION=$(cat "$WORKSPACE/$VERSION_FILE")
 
                     # Build using Docker Compose
+                    echo "Building with version $VERSION..."
                     docker-compose build --no-cache
 
                     echo "Built Docker image with docker-compose"
                 '''
             }
         }
+
 
         // stage('Build') {
         //     steps {
