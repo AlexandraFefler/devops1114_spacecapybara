@@ -2,11 +2,12 @@
 
 services: 
   web:
-    # build: . # build the web app image (by web i mean runs transfers data to a certain port, accessed via some browser)
+    build: . # build the web app image (by web i mean runs transfers data to a certain port, accessed via some browser)
     # builds with the Dockerfile as usual
     # image: sashafefler/flaskapp # better practice to specify a name for the image we're building here 
     # image: sashafefler/spacecapybara:v6 # getting the image from dockerHub now instead of builiding the app locally every time
-    image: sashafefler/spacecapybara:${VERSION}
+    image: ${{ secrets.DOCKER_HUB_USERNAME }}/spacecapybara:latest # Match the GitHub Actions tag
+    container_name: spacecapybara_web
     ports: # run a container with the imgae built, with -p 5002:5002
       - "${WEB_PORT}:${WEB_PORT}" 
     volumes: # like COPY, saves the images apps and stuff to  the containers /app dir. 
@@ -14,7 +15,7 @@ services:
     # the directory /app in the container machine, so it's synchronized in real time! 
     # No need to rebuild the image to see the changes in original code! 
     # at least that's what i got from chatgpt
-      - .:/app
+      - .:/app # chat says it's not ideal for prod so ig will get rid of that in the future (search for 'docker-compose before changes' in whatsapp chat w/ myself, pic under this msg is context)
     environment:
       - FLASK_ENV=${FLASK_ENV}
       - MYSQL_HOST=${MYSQL_HOST}
