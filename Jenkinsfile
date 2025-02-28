@@ -84,7 +84,7 @@ pipeline {
             }
         }
         
-        stage('Build') {
+        stage('Build docker image') {
             steps {
                 echo 'Building Docker image using docker-compose with hardcoded .env file...'
                 sh '''
