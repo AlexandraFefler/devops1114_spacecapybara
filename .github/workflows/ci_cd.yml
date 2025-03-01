@@ -64,7 +64,7 @@ jobs:
         run: |
           export DOCKERHUB_USER=${DOCKERHUB_USER}
           export VERSION=${VERSION}
-          docker compose up -d --force-recreate
+          DOCKERHUB_USER=$DOCKERHUB_USER VERSION=$VERSION docker compose up -d --force-recreate
         # run: |
         #   DOCKERHUB_USER=$DOCKERHUB_USER VERSION=$VERSION docker compose up -d --force-recreate
       
