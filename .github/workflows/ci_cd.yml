@@ -107,15 +107,20 @@ jobs:
 
             # Create init.sql file
             echo "$INIT_SQL_CONTENT" > init.sql
+            echo "init.sql worked"
 
             # Create .env file
             echo "$ENV_FILE_CONTENT" > .env
+            echo ".env worked"
 
             # Run docker-compose
             echo "DOCKERHUB_USER=${DOCKERHUB_USER}" >> .env  # Inject variables into .env
+            echo "put dh username into .env"
             echo "VERSION=${VERSION}" >> .env  # Inject variables into .env
+            echo "put dh version into .env"
             cat .env  # Debugging step to verify environment variables
             docker-compose up -d --force-recreate
+            echo "did docker-compose up"
 
           EOF
 
