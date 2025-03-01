@@ -24,8 +24,8 @@ jobs:
           DOCKERHUB_USER: ${{ secrets.DOCKER_HUB_USERNAME }}
           VERSION: 1.0.${{ github.run_number }}
         run: |
-          docker build -t $DOCKERHUB_USER/spacecapybara:${VERSION} .
-          docker tag $DOCKERHUB_USER/spacecapybara:${VERSION} $DOCKERHUB_USER/spacecapybara:latest
+          docker build -t $DOCKERHUB_USER/spacecapybara_app:${VERSION} .
+          docker tag $DOCKERHUB_USER/spacecapybara_app:${VERSION} $DOCKERHUB_USER/spacecapybara_app:latest
 
       # - name: Tag Docker image
       #   run: docker tag spacecapybara_app:latest ${{ secrets.DOCKER_HUB_USERNAME }}/spacecapybara:latest
@@ -35,5 +35,5 @@ jobs:
           DOCKERHUB_USER: ${{ secrets.DOCKER_HUB_USERNAME }}
           VERSION: 1.0.${{ github.run_number }}
         run: |
-          docker push $DOCKERHUB_USER/spacecapybara:${VERSION}
-          docker push $DOCKERHUB_USER/spacecapybara:latest
+          docker push $DOCKERHUB_USER/spacecapybara_app:${VERSION}
+          docker push $DOCKERHUB_USER/spacecapybara_app:latest
