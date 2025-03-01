@@ -106,16 +106,26 @@ jobs:
           chmod 600 private_key.pem
           scp -o StrictHostKeyChecking=no -i private_key.pem docker-compose.yml ec2-user@$EC2_PUBLIC_IP:/home/ec2-user/
 
+          # DEBUG: Show received values in GitHub Actions before transfer
+          echo "DOCKERHUB_USER=${DOCKERHUB_USER}"
+          echo "VERSION=${VERSION}"
+
+          # Upload init.sql and .env to EC2 using SCP (properly preserving multi-line content)
+          echo "$INIT_SQL_CONTENT" > init.sql
+          echo "$ENV_FILE_CONTENT" > .env
+          
+          scp -o StrictHostKeyChecking=no -i private_key.pem init.sql ec2-user@$EC2_PUBLIC_IP:/home/ec2-user/
+          scp -o StrictHostKeyChecking=no -i private_key.pem .env ec2-user@$EC2_PUBLIC_IP:/home/ec2-user/
+
           # Connect to EC2 and execute deployment steps
           ssh -o StrictHostKeyChecking=no -i private_key.pem ec2-user@$EC2_PUBLIC_IP << 'EOF'
+            cd /home/ec2-user || exit 1
 
-            # Create init.sql file
-            echo $INIT_SQL_CONTENT > init.sql
-            echo "init.sql worked"
-
-            # Create .env file
-            echo $ENV_FILE_CONTENT > .env
-            echo ".env worked"
+            # Debug: Show contents of .env and init.sql
+            echo "===== .env CONTENT ====="
+            cat .env
+            echo "===== init.sql CONTENT ====="
+            cat init.sql
 
             # Run docker-compose
             echo "DOCKERHUB_USER=${DOCKERHUB_USER}" >> .env  # Inject variables into .env
@@ -123,8 +133,11 @@ jobs:
             echo "VERSION=${VERSION}" >> .env  # Inject variables into .env
             echo "put dh version into .env"
             cat .env  # Debugging step to verify environment variables
-            docker-compose up -d --force-recreate
+            
+            # Run docker-compose ensuring it loads from .env
+            docker-compose --env-file .env up -d --force-recreate
             echo "did docker-compose up"
+            
             echo "behold the l o g s:"
             docker-compose logs
 
