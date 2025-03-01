@@ -62,7 +62,7 @@ jobs:
           DOCKERHUB_USER: ${{ secrets.DOCKER_HUB_USERNAME }}
           VERSION: 1.0.${{ github.run_number }}
         run: |
-          docker compose up -d --force-recreate
+          DOCKERHUB_USER=$DOCKERHUB_USER VERSION=$VERSION docker compose up -d --force-recreate --build
       
       - name: Test Application with Curl
         run: |
