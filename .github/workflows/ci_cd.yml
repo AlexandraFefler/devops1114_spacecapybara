@@ -110,11 +110,11 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i private_key.pem ec2-user@$EC2_PUBLIC_IP << 'EOF'
 
             # Create init.sql file
-            echo "$INIT_SQL_CONTENT" > init.sql
+            echo $INIT_SQL_CONTENT > init.sql
             echo "init.sql worked"
 
             # Create .env file
-            echo "$ENV_FILE_CONTENT" > .env
+            echo $ENV_FILE_CONTENT > .env
             echo ".env worked"
 
             # Run docker-compose
