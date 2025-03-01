@@ -19,16 +19,21 @@ jobs:
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
 
-      - name: Build and tag Docker image
+      - name: Build Docker image
         env:
           DOCKERHUB_USER: ${{ secrets.DOCKER_HUB_USERNAME }}
           VERSION: 1.0.${{ github.run_number }}
-        run: docker compose build --build-arg DOCKERHUB_USER=${DOCKERHUB_USER} --build-arg VERSION=${VERSION} --no-cache # using preinstalled docker in the runner (specifically docker-compose plugin called docker compose)
+        run: |
+          docker build -t $DOCKERHUB_USER/spacecapybara:${VERSION} .
+          docker tag $DOCKERHUB_USER/spacecapybara:${VERSION} $DOCKERHUB_USER/spacecapybara:latest
 
       # - name: Tag Docker image
       #   run: docker tag spacecapybara_app:latest ${{ secrets.DOCKER_HUB_USERNAME }}/spacecapybara:latest
 
       - name: Push Docker image to Docker Hub
         env:
+          DOCKERHUB_USER: ${{ secrets.DOCKER_HUB_USERNAME }}
           VERSION: 1.0.${{ github.run_number }}
-        run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/spacecapybara:${VERSION}
+        run: |
+          docker push $DOCKERHUB_USER/spacecapybara:${VERSION}
+          docker push $DOCKERHUB_USER/spacecapybara:latest
