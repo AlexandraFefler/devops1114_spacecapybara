@@ -115,7 +115,7 @@ jobs:
             echo "DOCKERHUB_USER=${DOCKERHUB_USER}" >> .env  # Inject variables into .env
             echo "VERSION=${VERSION}" >> .env  # Inject variables into .env
             cat .env  # Debugging step to verify environment variables
-            docker compose up -d --force-recreate
+            docker-compose up -d --force-recreate
 
           EOF
 
