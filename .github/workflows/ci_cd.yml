@@ -26,9 +26,6 @@ jobs:
         run: |
           docker build -t $DOCKERHUB_USER/spacecapybara_app:${VERSION} .
 
-      # - name: Tag Docker image
-      #   run: docker tag spacecapybara_app:latest ${{ secrets.DOCKER_HUB_USERNAME }}/spacecapybara:latest
-
       - name: Push Docker image to Docker Hub (only with ver)
         env:
           DOCKERHUB_USER: ${{ secrets.DOCKER_HUB_USERNAME }}
@@ -120,19 +117,18 @@ jobs:
           # Connect to EC2 and execute deployment steps with variables passed directly
           ssh -o StrictHostKeyChecking=no -i private_key.pem ec2-user@$EC2_PUBLIC_IP "
             cd /home/ec2-user || exit 1
-            
-            # Debug: Show contents of .env and init.sql
-            echo '===== .env CONTENT ====='
-            cat .env
-            echo '===== init.sql CONTENT ====='
-            cat init.sql
 
             # Inject variables into .env
             echo 'DOCKERHUB_USER=${DOCKERHUB_USER}' >> .env
             echo 'put dh username into .env'
             echo 'VERSION=${VERSION}' >> .env
             echo 'put dh version into .env'
-            cat .env  # Debugging step to verify environment variables
+            
+            # DEBUG: Show contents of .env and init.sql
+            echo '===== .env CONTENT ====='
+            cat .env
+            echo '===== init.sql CONTENT ====='
+            cat init.sql
 
             # Run docker-compose ensuring it loads from .env
             docker-compose --env-file .env up -d --force-recreate
