@@ -121,6 +121,8 @@ jobs:
             cat .env  # Debugging step to verify environment variables
             docker-compose up -d --force-recreate
             echo "did docker-compose up"
+            echo "behold the l o g s:"
+            docker-compose logs
 
           EOF
 
