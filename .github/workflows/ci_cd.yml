@@ -13,11 +13,6 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Install Docker and Docker Compose
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y docker.io docker-compose
-
       - name: Create .env file
         run: echo "${{ secrets.ENV_FILE }}" > .env
 
@@ -25,7 +20,7 @@ jobs:
         run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
 
       - name: Build and tag Docker image
-        run: docker-compose build --no-cache
+        run: docker compose build --no-cache # using preinstalled docker in the runner (specifically docker-compose plugin called docker compose)
 
       - name: Tag Docker image
         run: docker tag spacecapybara_app:latest ${{ secrets.DOCKER_HUB_USERNAME }}/spacecapybara:latest
