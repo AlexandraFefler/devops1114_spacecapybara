@@ -113,21 +113,18 @@ jobs:
 
       - name: Initialize Terraform
         run: |
-          echo "behold pwd:"
-          pwd
+          cd ec2_provision
           terraform init
 
       - name: Apply Terraform Configuration
         run: |
-          echo "behold pwd:"
-          pwd
+          cd ec2_provision
           terraform apply --auto-approve
 
       # - name: Get EC2 Public IP
       #   id: get-ec2-ip
       #   run: |
-      #     echo "behold pwd:"
-      #     pwd
+      #     cd ec2_provision
       #     echo "EC2_PUBLIC_IP=$(terraform output -raw public_ip)" >> $GITHUB_ENV
 
       # - name: Store EC2 Public IP as GitHub Actions Environment Variable
