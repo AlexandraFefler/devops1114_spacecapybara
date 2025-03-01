@@ -8,9 +8,10 @@ services:
       context: .
       args:
         DOCKERHUB_USER: ${DOCKERHUB_USER}  # Get the value from the environment
+        VERSION: ${VERSION}
     # image: sashafefler/flaskapp # better practice to specify a name for the image we're building here 
     # image: sashafefler/spacecapybara:v6 # getting the image from dockerHub now instead of builiding the app locally every time
-    image: ${DOCKERHUB_USER}/spacecapybara:latest # Match the GitHub Actions tag
+    image: ${DOCKERHUB_USER}/spacecapybara_app:${VERSION} # Match the GitHub Actions tag
     container_name: spacecapybara_web
     ports: # run a container with the imgae built, with -p 5002:5002
       - "${WEB_PORT}:${WEB_PORT}" 
