@@ -28,6 +28,8 @@ services:
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - WEB_PORT=${WEB_PORT} # sukaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa blyat' yobaniy v rot etogo chatgpt blyat' ichpachmak nahuy s huya li on takoy tupoy blyat' ya poshla samoubyus nahuy ya yebala ego v rot 
+      - DOCKERHUB_USER=${DOCKERHUB_USER}  # ✅ Explicitly passing the missing env vars
+      - VERSION=${VERSION}  # ✅ Explicitly passing the missing env vars
     depends_on:
       - db
 
