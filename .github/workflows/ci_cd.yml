@@ -118,6 +118,8 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i private_key.pem ec2-user@$EC2_PUBLIC_IP "
             cd /home/ec2-user || exit 1
 
+            docker-compose down -v
+
             # Inject variables into .env
             echo 'DOCKERHUB_USER=${DOCKERHUB_USER}' >> .env
             echo 'put dh username into .env'
