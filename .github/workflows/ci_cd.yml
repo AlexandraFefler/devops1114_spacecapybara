@@ -138,6 +138,7 @@ jobs:
             docker-compose --env-file .env up -d --force-recreate
             echo 'did docker-compose up'
             
+            sleep 20
             echo 'behold the l o g s:'
             docker-compose logs
           "
