@@ -88,6 +88,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build-and-push, test-container]
 
+    - name: Check out repository
+      uses: actions/checkout@v4
+
     steps:
       - name: Connect to EC2 and deploy
         env:
