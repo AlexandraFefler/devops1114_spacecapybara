@@ -29,4 +29,6 @@ jobs:
       #   run: docker tag spacecapybara_app:latest ${{ secrets.DOCKER_HUB_USERNAME }}/spacecapybara:latest
 
       - name: Push Docker image to Docker Hub
-        run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/spacecapybara:latest
+        env:
+          VERSION: 1.0.${{ github.run_number }}
+        run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/spacecapybara:${VERSION}
