@@ -7,7 +7,7 @@ services:
     build:
       context: .
       args:
-        DOCKERHUB_USER: ${DOCKERHUB_USER}  # Get the value from the environment
+        DOCKERHUB_USER: ${DOCKERHUB_USER}  # Get the value from the environment set in docker-compose build command
         VERSION: ${VERSION}
     # image: sashafefler/flaskapp # better practice to specify a name for the image we're building here 
     # image: sashafefler/spacecapybara:v6 # getting the image from dockerHub now instead of builiding the app locally every time
