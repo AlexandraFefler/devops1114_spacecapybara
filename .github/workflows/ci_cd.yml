@@ -25,15 +25,23 @@ jobs:
           VERSION: 1.0.${{ github.run_number }}
         run: |
           docker build -t $DOCKERHUB_USER/spacecapybara_app:${VERSION} .
-          docker tag $DOCKERHUB_USER/spacecapybara_app:${VERSION} $DOCKERHUB_USER/spacecapybara_app:latest
 
       # - name: Tag Docker image
       #   run: docker tag spacecapybara_app:latest ${{ secrets.DOCKER_HUB_USERNAME }}/spacecapybara:latest
 
-      - name: Push Docker image to Docker Hub
+      - name: Push Docker image to Docker Hub (only with ver)
         env:
           DOCKERHUB_USER: ${{ secrets.DOCKER_HUB_USERNAME }}
           VERSION: 1.0.${{ github.run_number }}
         run: |
           docker push $DOCKERHUB_USER/spacecapybara_app:${VERSION}
+
+      - name: Connect to existing testing AWS EC2, ensure docker and docker-compose installed and docker-compose run the spacecapybara image published earlier in the workflow
+
+      - name: Push Docker image to Docker Hub (as latest stable)
+        env:
+          DOCKERHUB_USER: ${{ secrets.DOCKER_HUB_USERNAME }}
+          VERSION: 1.0.${{ github.run_number }}
+        run: |
+          docker tag $DOCKERHUB_USER/spacecapybara_app:${VERSION} $DOCKERHUB_USER/spacecapybara_app:latest
           docker push $DOCKERHUB_USER/spacecapybara_app:latest
