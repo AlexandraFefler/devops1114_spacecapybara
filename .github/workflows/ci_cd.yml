@@ -101,6 +101,7 @@ jobs:
           # Create SSH key
           echo "$SSH_PRIVATE_KEY" > private_key.pem
           chmod 600 private_key.pem
+          scp -o StrictHostKeyChecking=no -i private_key.pem docker-compose.yml ec2-user@$EC2_PUBLIC_IP:/home/ec2-user/
 
           # Connect to EC2 and execute deployment steps
           ssh -o StrictHostKeyChecking=no -i private_key.pem ec2-user@$EC2_PUBLIC_IP << 'EOF'
