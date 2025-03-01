@@ -63,9 +63,11 @@ jobs:
           VERSION: 1.0.${{ github.run_number }}
         run: |
           docker compose up -d --force-recreate
+      
       - name: Test Application with Curl
         run: |
-          sleep 5  # Wait for the container to start
+          sleep 30  # Wait for the container to start
+          docker compose logs
           if curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:5002 | grep -q "^200$"; then
               echo "Test passed: App is responding with HTTP 200."
           else
