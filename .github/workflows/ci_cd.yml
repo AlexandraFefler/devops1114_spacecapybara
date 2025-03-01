@@ -117,31 +117,30 @@ jobs:
           scp -o StrictHostKeyChecking=no -i private_key.pem init.sql ec2-user@$EC2_PUBLIC_IP:/home/ec2-user/
           scp -o StrictHostKeyChecking=no -i private_key.pem .env ec2-user@$EC2_PUBLIC_IP:/home/ec2-user/
 
-          # Connect to EC2 and execute deployment steps
-          ssh -o StrictHostKeyChecking=no -i private_key.pem ec2-user@$EC2_PUBLIC_IP << 'EOF'
+          # Connect to EC2 and execute deployment steps with variables passed directly
+          ssh -o StrictHostKeyChecking=no -i private_key.pem ec2-user@$EC2_PUBLIC_IP "
             cd /home/ec2-user || exit 1
-
+            
             # Debug: Show contents of .env and init.sql
-            echo "===== .env CONTENT ====="
+            echo '===== .env CONTENT ====='
             cat .env
-            echo "===== init.sql CONTENT ====="
+            echo '===== init.sql CONTENT ====='
             cat init.sql
 
-            # Run docker-compose
-            echo "DOCKERHUB_USER=${DOCKERHUB_USER}" >> .env  # Inject variables into .env
-            echo "put dh username into .env"
-            echo "VERSION=${VERSION}" >> .env  # Inject variables into .env
-            echo "put dh version into .env"
+            # Inject variables into .env
+            echo 'DOCKERHUB_USER=${DOCKERHUB_USER}' >> .env
+            echo 'put dh username into .env'
+            echo 'VERSION=${VERSION}' >> .env
+            echo 'put dh version into .env'
             cat .env  # Debugging step to verify environment variables
-            
+
             # Run docker-compose ensuring it loads from .env
             docker-compose --env-file .env up -d --force-recreate
-            echo "did docker-compose up"
+            echo 'did docker-compose up'
             
-            echo "behold the l o g s:"
+            echo 'behold the l o g s:'
             docker-compose logs
-
-          EOF
+          "
 
           # Clean up SSH key
           rm -f private_key.pem
