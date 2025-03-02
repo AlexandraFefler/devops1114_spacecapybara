@@ -126,6 +126,11 @@ jobs:
           cd ec2_provision
           terraform init
 
+      # - name: Cleanup before apply # actually no need for it apply does the job of not doing the same work twice 
+      #   run: |
+      #     cd ec2_provision
+      #     terraform detroy --auto-approve
+
       - name: Apply Terraform Configuration
         run: |
           cd ec2_provision
@@ -142,6 +147,9 @@ jobs:
 
       - name: Store EC2 Public IP as GitHub Actions Environment Variable
         run: echo "EC2_PUBLIC_IP=${{ env.EC2_PUBLIC_IP }}" >> $GITHUB_ENV
+      
+      - name: Sleep to give the instance time to initialize before deployment
+        run: sleep 120
 
   deployment:
     runs-on: ubuntu-latest
