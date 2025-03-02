@@ -6,6 +6,25 @@ on:
       - main
 
 jobs:
+
+  debug-oidc:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write  # Required to fetch OIDC token
+      contents: read
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Debug GitHub OIDC Claims
+        id: oidc-token
+        run: |
+          echo "Fetching OIDC token..."
+          curl -s -H "Authorization: Bearer $ACTIONS_ID_TOKEN" \
+          "https://token.actions.githubusercontent.com/.well-known/openid-configuration" | jq
+          echo "-------ended the gcp debug thing--------"
+
   build-and-push:
     runs-on: ubuntu-latest
 
