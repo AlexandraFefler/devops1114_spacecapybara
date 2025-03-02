@@ -107,7 +107,8 @@ jobs:
       - name: Authenticate with GCP
         run: |
           cd ec2_provision
-          echo '${{ secrets.GCP_CREDENTIALS }}' > gcp-key.json
+          echo '${{ secrets.GCP_CREDENTIALS }}' | base64 --decode > gcp-key.json
+          cat gcp-key.json
           export GOOGLE_APPLICATION_CREDENTIALS=$PWD/gcp-key.json
           echo "here is what in the created json: $GOOGLE_APPLICATION_CREDENTIALS"
 
