@@ -106,8 +106,9 @@ jobs:
 
       - name: Authenticate with GCP
         run: |
+          cd ec2_provision
           echo '${{ secrets.GCP_CREDENTIALS }}' > gcp-key.json
-          export GOOGLE_APPLICATION_CREDENTIALS="gcp-key.json"
+          export GOOGLE_APPLICATION_CREDENTIALS=$PWD/gcp-key.json
           echo "here is what in the created json: $GOOGLE_APPLICATION_CREDENTIALS"
 
       - name: Initialize Terraform
