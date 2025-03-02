@@ -158,7 +158,7 @@ jobs:
       
   gke-deployment:
     runs-on: ubuntu-latest
-    needs: [build-and-push, test-container, infrastructure-provisioning]
+    needs: [build-and-push, test-container]
 
     steps:
       - name: Check out repository
