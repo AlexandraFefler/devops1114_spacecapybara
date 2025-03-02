@@ -114,8 +114,7 @@ jobs:
           cd ec2_provision
           terraform apply --auto-approve
 
-            - name: Get EC2 Public IP
-      - name: Get provisioned ec2 ip
+      - name: Get EC2 Public IP
         id: get-ec2-ip
         run: |
           cd ec2_provision
