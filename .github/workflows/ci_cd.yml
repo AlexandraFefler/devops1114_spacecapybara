@@ -144,7 +144,7 @@ jobs:
       - name: Get EC2 Public IP from Terraform
         run: echo "EC2_PUBLIC_IP=${{ needs.infrastructure-provisioning.outputs.EC2_PUBLIC_IP }}" >> $GITHUB_ENV
 
-      - name: Debug EC2_PUBLIC_IP
+      - name: DEBUG EC2_PUBLIC_IP
         run: echo "Using EC2_PUBLIC_IP- ${{ env.EC2_PUBLIC_IP }}"
 
       - name: Connect to EC2 and deploy
