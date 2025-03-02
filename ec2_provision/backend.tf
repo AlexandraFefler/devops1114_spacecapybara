@@ -1,6 +1,8 @@
 terraform {
-  backend "gcs" {
-    bucket  = "spacecapy_bucket"
-    prefix  = "terraform/state"  # Folder path inside the bucket
+  backend "s3" {
+    bucket         = "spacecapy_bucket"
+    key            = "terraform/state.tfstate"
+    region         = "us-east-1"
+    encrypt        = true
   }
 }

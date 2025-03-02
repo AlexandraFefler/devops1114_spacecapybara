@@ -104,14 +104,14 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1 
 
-      - name: Authenticate with GCP
-        run: |
-          cd ec2_provision
-          echo '${{ secrets.GCP_CREDENTIALS }}'
-          echo '${{ secrets.GCP_CREDENTIALS }}' > gcp-key.json
-          cat gcp-key.json
-          export GOOGLE_APPLICATION_CREDENTIALS=$PWD/gcp-key.json
-          echo "here is what in the created json: $GOOGLE_APPLICATION_CREDENTIALS"
+      # - name: Authenticate with GCP
+      #   run: |
+      #     cd ec2_provision
+      #     echo '${{ secrets.GCP_CREDENTIALS }}'
+      #     echo '${{ secrets.GCP_CREDENTIALS }}' > gcp-key.json
+      #     cat gcp-key.json
+      #     export GOOGLE_APPLICATION_CREDENTIALS=$PWD/gcp-key.json
+      #     echo "here is what in the created json: $GOOGLE_APPLICATION_CREDENTIALS"
 
       # - name: Authenticate with GCP
       #   run: |
