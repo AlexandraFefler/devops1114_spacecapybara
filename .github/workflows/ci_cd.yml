@@ -120,7 +120,7 @@ jobs:
           cd ec2_provision
           TERRAFORM_IP=$(terraform output -raw public_ip | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' | tr -d '[:space:]')
           echo "Extracted EC2_PUBLIC_IP: '$TERRAFORM_IP'"  # Debugging output
-          echo "EC2_PUBLIC_IP=$TERRAFORM_IP" >> $GITHUB_ENV
+          echo "EC2_PUBLIC_IP=$TERRAFORM_IP" > $GITHUB_ENV
 
 
       - name: Store EC2 Public IP as GitHub Actions Environment Variable
