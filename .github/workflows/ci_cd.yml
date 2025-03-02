@@ -183,6 +183,17 @@ jobs:
           gcloud container clusters get-credentials workflow-spacecapy --zone us-central1-c --project automated-lodge-449109-b9
           kubectl cluster-info  # Debugging step to verify the connection
 
+      - name: Create init.sql from Secret
+        run: |
+          echo "${{ secrets.INIT_SQL }}" > init.sql
+          echo "Created init.sql from secret"
+
+      - name: Create or Update ConfigMap for init.sql
+        run: |
+          kubectl create configmap init-sql-config --from-file=init.sql --namespace=default --dry-run=apply -o yaml | kubectl apply -f -
+          echo "ConfigMap init-sql-config created/updated"
+
+
       - name: Deploy to GKE
         run: |
           kubectl apply -f k8sDeployment.yaml
