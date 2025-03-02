@@ -104,6 +104,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1 
 
+      - name: Authenticate with GCP
+        run: |
+          echo '${{ secrets.GCP_CREDENTIALS }}' > gcp-key.json
+          export GOOGLE_APPLICATION_CREDENTIALS="gcp-key.json"
+          echo "here is what in the created json: $GOOGLE_APPLICATION_CREDENTIALS"
+
       - name: Initialize Terraform
         run: |
           cd ec2_provision
