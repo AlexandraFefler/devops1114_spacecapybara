@@ -131,7 +131,7 @@ jobs:
       #   run: echo "EC2_PUBLIC_IP=${{ env.EC2_PUBLIC_IP }}" > $GITHUB_ENV
       
       - name: Sleep to give the instance time to initialize before deployment
-        run: sleep 120
+        run: sleep 200
 
   deployment:
     runs-on: ubuntu-latest
@@ -176,6 +176,10 @@ jobs:
           # Connect to EC2 and execute deployment steps with variables passed directly
           ssh -o StrictHostKeyChecking=no -i private_key.pem ec2-user@$EC2_PUBLIC_IP "
             cd /home/ec2-user || exit 1
+
+            # DEBUG: checking if docker and docker-compose installed withing the sleep time
+            docker version
+            docker-compose version
 
             docker-compose down -v
 
