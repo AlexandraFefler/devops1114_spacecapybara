@@ -9,9 +9,6 @@ jobs:
 
   debug-gcp:
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write  # Required to fetch OIDC token
-      contents: read
 
     steps:
       - name: Checkout Repository

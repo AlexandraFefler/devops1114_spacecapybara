@@ -106,7 +106,7 @@ spec:
           echo "MySQL is up and running!"
       containers:
       - name: web
-        image: sashafefler/spacecapybara:v6
+        image: sashafefler/spacecapybara_app:latest
         ports:
         - containerPort: 5002
         env:
