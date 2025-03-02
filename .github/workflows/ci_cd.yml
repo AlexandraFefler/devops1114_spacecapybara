@@ -156,33 +156,33 @@ jobs:
   #     - name: Sleep to give the instance time to initialize before deployment
   #       run: sleep 200
       
-    gke-deployment:
-    runs-on: ubuntu-latest
-    needs: [build-and-push, test-container, infrastructure-provisioning]
+  gke-deployment:
+  runs-on: ubuntu-latest
+  needs: [build-and-push, test-container, infrastructure-provisioning]
 
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
+  steps:
+    - name: Check out repository
+      uses: actions/checkout@v4
 
-      - name: Authenticate with GCP
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+    - name: Authenticate with GCP
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
-      - name: Configure gcloud CLI
-        uses: google-github-actions/setup-gcloud@v2
-        with:
-          project_id: automated-lodge-449109-b9
+    - name: Configure gcloud CLI
+      uses: google-github-actions/setup-gcloud@v2
+      with:
+        project_id: automated-lodge-449109-b9
 
-      - name: Get GKE Cluster Credentials
-        run: |
-          gcloud container clusters get-credentials workflow-spacecapy --zone us-central1-c --project automated-lodge-449109-b9
-          kubectl cluster-info  # Debugging step to verify the connection
+    - name: Get GKE Cluster Credentials
+      run: |
+        gcloud container clusters get-credentials workflow-spacecapy --zone us-central1-c --project automated-lodge-449109-b9
+        kubectl cluster-info  # Debugging step to verify the connection
 
-      - name: Deploy to GKE
-        run: |
-          kubectl apply -f k8sdeployment.yml
-        # kubectl rollout status deployment/k8sdeployment -n YOUR_NAMESPACE
+    - name: Deploy to GKE
+      run: |
+        kubectl apply -f k8sdeployment.yml
+      # kubectl rollout status deployment/k8sdeployment -n YOUR_NAMESPACE
 
 
   # ec2-deployment:
