@@ -59,3 +59,8 @@ resource "aws_security_group" "space_capybara_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
+
+output "public_ip" {
+  description = "Public IP of the EC2 instance"
+  value       = aws_instance.space_capybara.public_ip
+}
