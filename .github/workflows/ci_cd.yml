@@ -104,59 +104,59 @@ jobs:
       - name: Stop and Clean Up Containers
         run: docker compose down
 
-  infrastructure-provisioning:
-    runs-on: ubuntu-latest
-    needs: [build-and-push, test-container]
+  # infrastructure-provisioning:
+  #   runs-on: ubuntu-latest
+  #   needs: [build-and-push, test-container]
 
-    outputs:
-      EC2_PUBLIC_IP: ${{ steps.get-ec2-ip.outputs.EC2_PUBLIC_IP }}
+  #   outputs:
+  #     EC2_PUBLIC_IP: ${{ steps.get-ec2-ip.outputs.EC2_PUBLIC_IP }}
 
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
+  #   steps:
+  #     - name: Check out repository
+  #       uses: actions/checkout@v4
 
-      - name: Move to Terraform directory
-        run: cd ec2_provision
+  #     - name: Move to Terraform directory
+  #       run: cd ec2_provision
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.10.4
+  #     - name: Setup Terraform
+  #       uses: hashicorp/setup-terraform@v2
+  #       with:
+  #         terraform_version: 1.10.4
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1 
+  #     - name: Configure AWS credentials
+  #       uses: aws-actions/configure-aws-credentials@v2
+  #       with:
+  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         aws-region: us-east-1 
 
-      - name: Initialize Terraform
-        run: |
-          cd ec2_provision
-          terraform init
+  #     - name: Initialize Terraform
+  #       run: |
+  #         cd ec2_provision
+  #         terraform init
 
-      - name: Apply Terraform Configuration
-        run: |
-          cd ec2_provision
-          terraform apply --auto-approve
+  #     - name: Apply Terraform Configuration
+  #       run: |
+  #         cd ec2_provision
+  #         terraform apply --auto-approve
 
-      - name: Get EC2 Public IP
-        id: get-ec2-ip
-        run: |
-          cd ec2_provision
-          TERRAFORM_IP=$(terraform output -raw public_ip | awk 'match($0, /([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)/) {print substr($0, RSTART, RLENGTH); exit}')
-          echo "Extracted EC2_PUBLIC_IP: '$TERRAFORM_IP'"
-          echo "EC2_PUBLIC_IP=$TERRAFORM_IP" >> $GITHUB_ENV
-          echo "::set-output name=EC2_PUBLIC_IP::$TERRAFORM_IP"
+  #     - name: Get EC2 Public IP
+  #       id: get-ec2-ip
+  #       run: |
+  #         cd ec2_provision
+  #         TERRAFORM_IP=$(terraform output -raw public_ip | awk 'match($0, /([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)/) {print substr($0, RSTART, RLENGTH); exit}')
+  #         echo "Extracted EC2_PUBLIC_IP: '$TERRAFORM_IP'"
+  #         echo "EC2_PUBLIC_IP=$TERRAFORM_IP" >> $GITHUB_ENV
+  #         echo "::set-output name=EC2_PUBLIC_IP::$TERRAFORM_IP"
 
 
-      # - name: Store EC2 Public IP as GitHub Actions Environment Variable
-      #   run: echo "EC2_PUBLIC_IP=${{ env.EC2_PUBLIC_IP }}" > $GITHUB_ENV
+  #     # - name: Store EC2 Public IP as GitHub Actions Environment Variable
+  #     #   run: echo "EC2_PUBLIC_IP=${{ env.EC2_PUBLIC_IP }}" > $GITHUB_ENV
       
-      - name: Sleep to give the instance time to initialize before deployment
-        run: sleep 200
-
-  deployment:
+  #     - name: Sleep to give the instance time to initialize before deployment
+  #       run: sleep 200
+      
+    gke-deployment:
     runs-on: ubuntu-latest
     needs: [build-and-push, test-container, infrastructure-provisioning]
 
@@ -164,69 +164,98 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Get EC2 Public IP from Terraform
-        run: echo "EC2_PUBLIC_IP=${{ needs.infrastructure-provisioning.outputs.EC2_PUBLIC_IP }}" >> $GITHUB_ENV
+      - name: Authenticate with GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
-      - name: DEBUG EC2_PUBLIC_IP
-        run: echo "Using EC2_PUBLIC_IP- ${{ env.EC2_PUBLIC_IP }}"
+      - name: Configure gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: automated-lodge-449109-b9
 
-      - name: Connect to EC2 and deploy
-        env:
-          EC2_PUBLIC_IP: ${{ env.EC2_PUBLIC_IP }}
-          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
-          DOCKERHUB_USER: ${{ secrets.DOCKER_HUB_USERNAME }}
-          VERSION: 1.0.${{ github.run_number }}
-          INIT_SQL_CONTENT: ${{ secrets.INIT_SQL }}
-          ENV_FILE_CONTENT: ${{ secrets.ENV_FILE }}
+      - name: Get GKE Cluster Credentials
         run: |
-          echo "Connecting to EC2 instance at $EC2_PUBLIC_IP"
-          # Create SSH key
-          echo "$SSH_PRIVATE_KEY" > private_key.pem
-          chmod 600 private_key.pem
-          scp -o StrictHostKeyChecking=no -i private_key.pem docker-compose.yml ec2-user@$EC2_PUBLIC_IP:/home/ec2-user/
+          gcloud container clusters get-credentials workflow-spacecapy --zone us-central1-c --project automated-lodge-449109-b9
+          kubectl cluster-info  # Debugging step to verify the connection
 
-          # DEBUG: Show received values in GitHub Actions before transfer
-          echo "DOCKERHUB_USER=${DOCKERHUB_USER}"
-          echo "VERSION=${VERSION}"
+      - name: Deploy to GKE
+        run: |
+          kubectl apply -f k8sdeployment.yml
+        # kubectl rollout status deployment/k8sdeployment -n YOUR_NAMESPACE
 
-          # Upload init.sql and .env to EC2 using SCP (properly preserving multi-line content)
-          echo "$INIT_SQL_CONTENT" > init.sql
-          echo "$ENV_FILE_CONTENT" > .env
+
+  # ec2-deployment:
+  #   runs-on: ubuntu-latest
+  #   needs: [build-and-push, test-container, infrastructure-provisioning]
+
+  #   steps:
+  #     - name: Check out repository
+  #       uses: actions/checkout@v4
+
+  #     - name: Get EC2 Public IP from Terraform
+  #       run: echo "EC2_PUBLIC_IP=${{ needs.infrastructure-provisioning.outputs.EC2_PUBLIC_IP }}" >> $GITHUB_ENV
+
+  #     - name: DEBUG EC2_PUBLIC_IP
+  #       run: echo "Using EC2_PUBLIC_IP- ${{ env.EC2_PUBLIC_IP }}"
+
+  #     - name: Connect to EC2 and deploy
+  #       env:
+  #         EC2_PUBLIC_IP: ${{ env.EC2_PUBLIC_IP }}
+  #         SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+  #         DOCKERHUB_USER: ${{ secrets.DOCKER_HUB_USERNAME }}
+  #         VERSION: 1.0.${{ github.run_number }}
+  #         INIT_SQL_CONTENT: ${{ secrets.INIT_SQL }}
+  #         ENV_FILE_CONTENT: ${{ secrets.ENV_FILE }}
+  #       run: |
+  #         echo "Connecting to EC2 instance at $EC2_PUBLIC_IP"
+  #         # Create SSH key
+  #         echo "$SSH_PRIVATE_KEY" > private_key.pem
+  #         chmod 600 private_key.pem
+  #         scp -o StrictHostKeyChecking=no -i private_key.pem docker-compose.yml ec2-user@$EC2_PUBLIC_IP:/home/ec2-user/
+
+  #         # DEBUG: Show received values in GitHub Actions before transfer
+  #         echo "DOCKERHUB_USER=${DOCKERHUB_USER}"
+  #         echo "VERSION=${VERSION}"
+
+  #         # Upload init.sql and .env to EC2 using SCP (properly preserving multi-line content)
+  #         echo "$INIT_SQL_CONTENT" > init.sql
+  #         echo "$ENV_FILE_CONTENT" > .env
           
-          scp -o StrictHostKeyChecking=no -i private_key.pem init.sql ec2-user@$EC2_PUBLIC_IP:/home/ec2-user/
-          scp -o StrictHostKeyChecking=no -i private_key.pem .env ec2-user@$EC2_PUBLIC_IP:/home/ec2-user/
+  #         scp -o StrictHostKeyChecking=no -i private_key.pem init.sql ec2-user@$EC2_PUBLIC_IP:/home/ec2-user/
+  #         scp -o StrictHostKeyChecking=no -i private_key.pem .env ec2-user@$EC2_PUBLIC_IP:/home/ec2-user/
 
-          # Connect to EC2 and execute deployment steps with variables passed directly
-          ssh -o StrictHostKeyChecking=no -i private_key.pem ec2-user@$EC2_PUBLIC_IP "
-            cd /home/ec2-user || exit 1
+  #         # Connect to EC2 and execute deployment steps with variables passed directly
+  #         ssh -o StrictHostKeyChecking=no -i private_key.pem ec2-user@$EC2_PUBLIC_IP "
+  #           cd /home/ec2-user || exit 1
 
-            # DEBUG: checking if docker and docker-compose installed withing the sleep time
-            docker version
-            docker-compose version
+  #           # DEBUG: checking if docker and docker-compose installed withing the sleep time
+  #           docker version
+  #           docker-compose version
 
-            docker-compose down -v
+  #           docker-compose down -v
 
-            # Inject variables into .env
-            echo 'DOCKERHUB_USER=${DOCKERHUB_USER}' >> .env
-            echo 'put dh username into .env'
-            echo 'VERSION=${VERSION}' >> .env
-            echo 'put dh version into .env'
+  #           # Inject variables into .env
+  #           echo 'DOCKERHUB_USER=${DOCKERHUB_USER}' >> .env
+  #           echo 'put dh username into .env'
+  #           echo 'VERSION=${VERSION}' >> .env
+  #           echo 'put dh version into .env'
             
-            # DEBUG: Show contents of .env and init.sql
-            echo '===== .env CONTENT ====='
-            cat .env
-            echo '===== init.sql CONTENT ====='
-            cat init.sql
+  #           # DEBUG: Show contents of .env and init.sql
+  #           echo '===== .env CONTENT ====='
+  #           cat .env
+  #           echo '===== init.sql CONTENT ====='
+  #           cat init.sql
 
-            # Run docker-compose ensuring it loads from .env
-            docker-compose --env-file .env up -d --force-recreate
-            echo 'did docker-compose up'
+  #           # Run docker-compose ensuring it loads from .env
+  #           docker-compose --env-file .env up -d --force-recreate
+  #           echo 'did docker-compose up'
             
-            sleep 20
-            echo 'behold the l o g s: '
-            docker-compose logs
-          "
-          echo "App running at http://$EC2_PUBLIC_IP:5002"
+  #           sleep 20
+  #           echo 'behold the l o g s: '
+  #           docker-compose logs
+  #         "
+  #         echo "App running at http://$EC2_PUBLIC_IP:5002"
 
-          # Clean up SSH key
-          rm -f private_key.pem
+  #         # Clean up SSH key
+  #         rm -f private_key.pem
