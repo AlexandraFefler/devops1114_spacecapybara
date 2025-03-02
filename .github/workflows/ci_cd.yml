@@ -17,13 +17,20 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Debug GitHub OIDC Claims
-        id: oidc-token
+      - name: Authenticate with GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
+      - name: Install gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: YOUR_PROJECT_ID
+
+      - name: Verify Authentication
         run: |
-          echo "Fetching OIDC token..."
-          curl -s -H "Authorization: Bearer $ACTIONS_ID_TOKEN" \
-          "https://token.actions.githubusercontent.com/.well-known/openid-configuration" | jq
-          echo "-------ended the gcp debug thing--------"
+          gcloud auth list
+          echo "-------ended the gcp auth debug thing--------"
 
   build-and-push:
     runs-on: ubuntu-latest
