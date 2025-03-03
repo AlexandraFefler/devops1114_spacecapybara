@@ -89,12 +89,13 @@ resource "google_container_node_pool" "primary_nodes" {
 
 lifecycle {
     ignore_changes = [
-      node_count,                        # Ignore node count changes to prevent recreation
-      version,                           # Ignore version unless explicitly changed
-      node_config[0].disk_size_gb,       # Ignore disk size changes
-      node_config[0].machine_type,       # Ignore machine type changes
-      node_config[0].image_type,         # Ignore image type changes
-      node_config[0].oauth_scopes        # Ignore scope changes
+      node_count,                  # Ignore manual scaling
+      version,                      # Prevent version drift
+      node_config[0].machine_type,   # Avoid unwanted updates to machine type
+      node_config[0].disk_size_gb,   # Ignore disk size changes
+      node_config[0].image_type,     # Prevent conflicts with Terraform-managed updates
+      node_config[0].tags,           # Ignore auto-applied changes to tags
+      node_config[0].resource_labels # Avoid unnecessary label updates
     ]
   }
 
