@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: space-capybara-web
+  labels:
+    app: space-capybara
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: space-capybara
+  template:
+    metadata:
+      labels:
+        app: space-capybara
+    spec:
+      initContainers:
+      - name: wait-for-mysql
+        image: mysql:8.0
+        command:
+        - sh
+        - -c
+        - |
+          echo "Waiting for MySQL to be ready..."
+          until mysqladmin ping -h mysql-service --silent; do
+            echo "Waiting for MySQL...";
+            sleep 3;
+          done;
+          echo "MySQL is up and running!"
+      containers:
+      - name: web
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        ports:
+        - containerPort: {{ .Values.appService.port }}
+        env:
+        - name: MYSQL_HOST
+          value: "mysql-service"
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: user
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: password
+        - name: MYSQL_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: database

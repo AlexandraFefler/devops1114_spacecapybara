@@ -1,0 +1,30 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: init-mysql-job
+spec:
+  backoffLimit: 4
+  template:
+    spec:
+      containers:
+      - name: init-mysql
+        image: mysql:8.0
+        command:
+        - sh
+        - -c
+        - |
+          echo "Waiting for MySQL to be ready..."
+          until mysqladmin ping -h mysql-service --silent; do
+            echo "Waiting for MySQL...";
+            sleep 3;
+          done;
+          echo "Initializing database..."
+          mysql -h mysql-service -u root -p{{ .Values.mysql.rootPassword }} < /docker-entrypoint-initdb.d/init.sql
+        volumeMounts:
+        - name: init-sql-volume
+          mountPath: /docker-entrypoint-initdb.d/
+      restartPolicy: OnFailure
+      volumes:
+      - name: init-sql-volume
+        secret:
+          secretName: init-sql-secret

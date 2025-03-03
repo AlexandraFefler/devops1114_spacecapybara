@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: space-capybara-web
+  labels:
+    app: space-capybara
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "{{ .Values.appService.port }}"
+spec:
+  selector:
+    app: space-capybara
+  ports:
+  - protocol: TCP
+    port: {{ .Values.appService.port }}
+    targetPort: {{ .Values.appService.port }}
+  type: {{ .Values.appService.type }}

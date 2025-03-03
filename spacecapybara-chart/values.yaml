@@ -1,0 +1,20 @@
+replicaCount: 3
+# maybe include mysqlReplicaCount too?
+
+image:
+  repository: sashafefler/spacecapybara_app
+  tag: latest
+
+mysql:
+  rootPassword: "admin" # better put this in a secret too, next
+  database: "mydatabase"
+  user: "user"
+  password: "password"
+
+appService:
+  type: LoadBalancer
+  port: 5002
+
+mysqlService:
+  type: ClusterIP
+  port: 3306
