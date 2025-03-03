@@ -108,9 +108,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build-and-push, test-container]
 
-    # outputs:
-    #   EC2_PUBLIC_IP: ${{ steps.get-ec2-ip.outputs.EC2_PUBLIC_IP }}
-      # pass the details for the gke connect command here instead
+    outputs:
+      GKE_CLUSTER_NAME: ${{ steps.get-gke-info.outputs.GKE_CLUSTER_NAME }}
+      GKE_ZONE: ${{ steps.get-gke-info.outputs.GKE_ZONE }}
+      GCP_PROJECT_ID: ${{ steps.get-gke-info.outputs.GCP_PROJECT_ID }}
 
     steps:
       - name: Check out repository
@@ -153,6 +154,39 @@ jobs:
           terraform apply --auto-approve
           echo "_____________________done________________________"
 
+      - name: Extract GKE Cluster Information
+        id: get-gke-info
+        run: |
+          cd tg-to-gke
+          CLUSTER_NAME=$(terraform output -raw kubernetes_cluster_name)
+          ZONE=$(terraform output -raw zone)
+          PROJECT_ID=$(terraform output -raw project_id)
+
+
+          echo "__________The passed details from output:__________"
+          echo CLUSTER_NAME
+          echo "__________________b o n k___________________"
+          echo ZONE
+          echo "__________________b o n k___________________"
+          echo PROJECT_ID
+          echo "__________________b o n k___________________"
+          
+          
+          echo "Extracted GKE_CLUSTER_NAME: $CLUSTER_NAME"
+          echo "Extracted GKE_ZONE: $ZONE"
+          echo "Extracted GCP_PROJECT_ID: $PROJECT_ID"
+
+          echo "GKE_CLUSTER_NAME=$CLUSTER_NAME" >> $GITHUB_ENV
+          echo "GKE_ZONE=$ZONE" >> $GITHUB_ENV
+          echo "GCP_PROJECT_ID=$PROJECT_ID" >> $GITHUB_ENV
+
+          echo "::set-output name=GKE_CLUSTER_NAME::$CLUSTER_NAME"
+          echo "::set-output name=GKE_ZONE::$ZONE"
+          echo "::set-output name=GCP_PROJECT_ID::$PROJECT_ID"
+
+      - name: Sleep to give the cluster time before deployment
+        run: sleep 60
+
       # - name: Get EC2 Public IP
       #   id: get-ec2-ip
       #   run: |
@@ -168,78 +202,87 @@ jobs:
       
       # - name: Sleep to give the instance time to initialize before deployment
       #   run: sleep 200
-      
 
+  gke-deployment:
+    runs-on: ubuntu-latest
+    needs: [build-and-push, test-container, gke-infrastructure-provisioning]
 
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
 
+      ###_________________Google auth start________________###
 
+      - name: Authenticate with GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
-  # gke-deployment:
-  #   runs-on: ubuntu-latest
-  #   needs: [build-and-push, test-container]
+      - name: Configure gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: automated-lodge-449109-b9
 
-  #   steps:
-  #     - name: Check out repository
-  #       uses: actions/checkout@v4
+      - name: Install GKE Auth Plugin
+        run: |
+          gcloud components install gke-gcloud-auth-plugin
 
-  #     - name: Authenticate with GCP
-  #       uses: google-github-actions/auth@v2
-  #       with:
-  #         credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+      ###_________________Google auth end__________________###
 
-  #     - name: Configure gcloud CLI
-  #       uses: google-github-actions/setup-gcloud@v2
-  #       with:
-  #         project_id: automated-lodge-449109-b9
+      - name: Get GKE Cluster Credentials
+        env:
+          GKE_CLUSTER_NAME: ${{ needs.gke-infrastructure-provisioning.outputs.GKE_CLUSTER_NAME }}
+          GKE_ZONE: ${{ needs.gke-infrastructure-provisioning.outputs.GKE_ZONE }}
+          GCP_PROJECT_ID: ${{ needs.gke-infrastructure-provisioning.outputs.GCP_PROJECT_ID }}
+        run: |
+          echo "Fetching GKE cluster credentials..."
+          gcloud container clusters get-credentials $GKE_CLUSTER_NAME --zone $GKE_ZONE --project $GCP_PROJECT_ID
+          kubectl cluster-info  # Debugging step to verify the connection
 
-  #     - name: Install GKE Auth Plugin
-  #       run: |
-  #         gcloud components install gke-gcloud-auth-plugin
+      # - name: Get GKE Cluster Credentials
+      #   run: |
+      #     gcloud container clusters get-credentials automated-lodge-449109-b9-gke --region us-central1 --project automated-lodge-449109-b9
+      #     kubectl cluster-info  # Debugging step to verify the connection
 
-  #     - name: Get GKE Cluster Credentials
-  #       run: |
-  #         gcloud container clusters get-credentials automated-lodge-449109-b9-gke --region us-central1 --project automated-lodge-449109-b9
-  #         kubectl cluster-info  # Debugging step to verify the connection
+      # - name: Create init.sql from Secret
+      #   run: |
+      #     echo "${{ secrets.INIT_SQL }}" > init.sql
+      #     echo "Created init.sql from secret"
 
-  #     # - name: Create init.sql from Secret
-  #     #   run: |
-  #     #     echo "${{ secrets.INIT_SQL }}" > init.sql
-  #     #     echo "Created init.sql from secret"
+      # - name: Create or Update ConfigMap for init.sql
+      #   run: |
+      #     kubectl create configmap init-sql-config --from-file=init.sql --namespace=default --dry-run=client -o yaml | kubectl apply -f -
+      #     echo "ConfigMap init-sql-config created/updated"
 
-  #     # - name: Create or Update ConfigMap for init.sql
-  #     #   run: |
-  #     #     kubectl create configmap init-sql-config --from-file=init.sql --namespace=default --dry-run=client -o yaml | kubectl apply -f -
-  #     #     echo "ConfigMap init-sql-config created/updated"
+      - name: Add Helm Repository
+        run: |
+          helm repo add spacecapy https://AlexandraFefler.github.io/spacecapy-helm-chart
+          helm repo update
 
-  #     - name: Add Helm Repository
-  #       run: |
-  #         helm repo add spacecapy https://AlexandraFefler.github.io/spacecapy-helm-chart
-  #         helm repo update
+      - name: Deploy to GKE with Helm
+        run: |
+          helm upgrade --install spacecapybara-rel spacecapy/spacecapybara-chart \
+            --namespace default \
+            --set image.repository=${{ secrets.DOCKER_HUB_USERNAME }}/spacecapybara_app \
+            --set image.tag=1.0.${{ github.run_number }} \
+            --atomic
+        # --atomic flag for auto-rollback if helm deployment did't succeed. Gotta add a FAILURE CHECK here and if helm upgrade really didn't work, then catch that in the workflow and fail the whole pipeline with a proper message.
 
-  #     - name: Deploy to GKE with Helm
-  #       run: |
-  #         helm upgrade --install spacecapybara-rel spacecapy/spacecapybara-chart \
-  #           --namespace default \
-  #           --set image.repository=${{ secrets.DOCKER_HUB_USERNAME }}/spacecapybara_app \
-  #           --set image.tag=1.0.${{ github.run_number }} \
-  #           --atomic
-  #       # --atomic flag for auto-rollback if helm deployment did't succeed. Gotta add a FAILURE CHECK here and if helm upgrade really didn't work, then catch that in the workflow and fail the whole pipeline with a proper message.
+      # - name: Deploy to GKE
+      #   run: |
+      #     kubectl apply -f k8sDeployment.yaml
+        # kubectl rollout status deployment/k8sdeployment -n YOUR_NAMESPACE
 
-  #     # - name: Deploy to GKE
-  #     #   run: |
-  #     #     kubectl apply -f k8sDeployment.yaml
-  #       # kubectl rollout status deployment/k8sdeployment -n YOUR_NAMESPACE
-
-  #     - name: Get External IP of Space Capybara Service
-  #       run: |
-  #         echo "Waiting for external IP..."
-  #         for i in {1..10}; do
-  #           EXTERNAL_IP=$(kubectl get svc space-capybara-web --namespace default --output=jsonpath='{.status.loadBalancer.ingress[0].ip}')
-  #           if [ -n "$EXTERNAL_IP" ]; then
-  #             echo "Space capy running at: http://$EXTERNAL_IP:5002"
-  #             exit 0
-  #           fi
-  #           echo "Waiting for LoadBalancer IP to be assigned... ($i/10)"
-  #           sleep 10
-  #         done
-  #         echo "❌ ERROR: Timed out waiting for external IP!" && exit 1
+      - name: Get External IP of Space Capybara Service
+        run: |
+          echo "Waiting for external IP..."
+          for i in {1..10}; do
+            EXTERNAL_IP=$(kubectl get svc space-capybara-web --namespace default --output=jsonpath='{.status.loadBalancer.ingress[0].ip}')
+            if [ -n "$EXTERNAL_IP" ]; then
+              echo "Space capy running at: http://$EXTERNAL_IP:5002"
+              exit 0
+            fi
+            echo "Waiting for LoadBalancer IP to be assigned... ($i/10)"
+            sleep 10
+          done
+          echo "❌ ERROR: Timed out waiting for external IP!" && exit 1
