@@ -167,9 +167,10 @@ jobs:
           cd tf-to-gke
   
           # Extract clean Terraform outputs
-          CLUSTER_NAME=$(terraform output -raw kubernetes_cluster_name | sed 's/::debug::Terraform//g' | tr -d '\r')
-          ZONE=$(terraform output -raw zone | sed 's/::debug::Terraform//g' | tr -d '\r')
-          PROJECT_ID=$(terraform output -raw project_id | sed 's/::debug::Terraform//g' | tr -d '\r')
+          CLUSTER_NAME=$(terraform output -raw kubernetes_cluster_name | sed -E 's/(exited with code 0\.|::debug::Terraform)//g' | tr -d '\r' | xargs)
+          ZONE=$(terraform output -raw zone | sed -E 's/(exited with code 0\.|::debug::Terraform)//g' | tr -d '\r' | xargs)
+          PROJECT_ID=$(terraform output -raw project_id | sed -E 's/(exited with code 0\.|::debug::Terraform)//g' | tr -d '\r' | xargs)
+
 
   
           echo "__________The passed details from output:__________"
