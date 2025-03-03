@@ -165,6 +165,9 @@ jobs:
         id: get-gke-info
         run: |
           cd tf-to-gke
+          terraform output -raw kubernetes_cluster_name
+          terraform output -raw zone
+          terraform output -raw project_id
           CLUSTER_NAME=$(terraform output -raw kubernetes_cluster_name)
           ZONE=$(terraform output -raw zone)
           PROJECT_ID=$(terraform output -raw project_id)
