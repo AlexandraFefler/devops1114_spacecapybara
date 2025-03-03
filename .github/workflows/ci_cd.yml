@@ -159,31 +159,24 @@ jobs:
         run: |
           cd tf-to-gke
           terraform apply --auto-approve
-          echo "_____________________done________________________"
+          echo "_____________________done_______________________"
 
       - name: Extract GKE Cluster Information
         id: get-gke-info
         run: |
           cd tf-to-gke
-
-          echo "debug:"
-          terraform output -raw kubernetes_cluster_name | awk -F'::' '{print $1}'
-          terraform output -raw zone | awk -F'::' '{print $1}'
-          terraform output -raw project_id | awk -F'::' '{print $1}'
-
           
           # Extract only the text before "::debug"
           CLUSTER_NAME=$(terraform output -raw kubernetes_cluster_name | awk -F'::' '{print $1}')
           ZONE=$(terraform output -raw zone | awk -F'::' '{print $1}')
           PROJECT_ID=$(terraform output -raw project_id | awk -F'::' '{print $1}')
 
-
           echo "__________The passed details from output:__________"
-          echo CLUSTER_NAME
+          echo $CLUSTER_NAME
           echo "__________________b o n k___________________"
-          echo ZONE
+          echo $ZONE
           echo "__________________b o n k___________________"
-          echo PROJECT_ID
+          echo $PROJECT_ID
           echo "__________________b o n k___________________"
           
 
