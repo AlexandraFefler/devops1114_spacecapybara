@@ -104,85 +104,19 @@ jobs:
       - name: Stop and Clean Up Containers
         run: docker compose down
 
-
-
-
-
-  # gke-infrastructure-provisioning:
-  #   runs-on: ubuntu-latest
-  #   needs: [build-and-push, test-container]
-
-  #   outputs:
-  #     EC2_PUBLIC_IP: ${{ steps.get-ec2-ip.outputs.EC2_PUBLIC_IP }}
-
-  #   steps:
-  #     - name: Check out repository
-  #       uses: actions/checkout@v4
-
-  #     - name: Move to Terraform directory
-  #       run: cd tf-to-gke
-
-  #     - name: Setup Terraform
-  #       uses: hashicorp/setup-terraform@v2
-  #       with:
-  #         terraform_version: 1.10.4
-      
-  #     ###_________________Google auth start________________###
-
-  #     - name: Authenticate with GCP
-  #       uses: google-github-actions/auth@v2
-  #       with:
-  #         credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-
-  #     - name: Configure gcloud CLI
-  #       uses: google-github-actions/setup-gcloud@v2
-  #       with:
-  #         project_id: automated-lodge-449109-b9
-
-  #     - name: Install GKE Auth Plugin
-  #       run: |
-  #         gcloud components install gke-gcloud-auth-plugin
-
-  #     ###_________________Google auth end__________________###
-
-  #     - name: Initialize Terraform
-  #       run: |
-  #         cd tf-to-gke
-  #         terraform init
-
-  #     - name: Apply Terraform Configuration
-  #       run: |
-  #         cd tf-to-gke
-  #         terraform apply --auto-approve
-
-  #     - name: Get EC2 Public IP
-  #       id: get-ec2-ip
-  #       run: |
-  #         cd tf-to-gke
-  #         TERRAFORM_IP=$(terraform output -raw public_ip | awk 'match($0, /([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)/) {print substr($0, RSTART, RLENGTH); exit}')
-  #         echo "Extracted EC2_PUBLIC_IP: '$TERRAFORM_IP'"
-  #         echo "EC2_PUBLIC_IP=$TERRAFORM_IP" >> $GITHUB_ENV
-  #         echo "::set-output name=EC2_PUBLIC_IP::$TERRAFORM_IP"
-
-
-  #     # - name: Store EC2 Public IP as GitHub Actions Environment Variable
-  #     #   run: echo "EC2_PUBLIC_IP=${{ env.EC2_PUBLIC_IP }}" > $GITHUB_ENV
-      
-  #     - name: Sleep to give the instance time to initialize before deployment
-  #       run: sleep 200
-      
-
-
-
-
-
-  gke-deployment:
+  gke-infrastructure-provisioning:
     runs-on: ubuntu-latest
     needs: [build-and-push, test-container]
+
+    # outputs:
+    #   EC2_PUBLIC_IP: ${{ steps.get-ec2-ip.outputs.EC2_PUBLIC_IP }}
+      # pass the details for the gke connect command here instead
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+      
+      ###_________________Google auth start________________###
 
       - name: Authenticate with GCP
         uses: google-github-actions/auth@v2
@@ -198,50 +132,114 @@ jobs:
         run: |
           gcloud components install gke-gcloud-auth-plugin
 
-      - name: Get GKE Cluster Credentials
-        run: |
-          gcloud container clusters get-credentials automated-lodge-449109-b9-gke --region us-central1 --project automated-lodge-449109-b9
-          kubectl cluster-info  # Debugging step to verify the connection
+      ###_________________Google auth end__________________###
 
-      # - name: Create init.sql from Secret
+      - name: Move to Terraform directory
+        run: cd tf-to-gke
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.10.4
+
+      - name: Initialize Terraform
+        run: |
+          cd tf-to-gke
+          terraform init
+
+      - name: Apply Terraform Configuration
+        run: |
+          cd tf-to-gke
+          terraform apply --auto-approve
+          echo "_____________________done________________________"
+
+      # - name: Get EC2 Public IP
+      #   id: get-ec2-ip
       #   run: |
-      #     echo "${{ secrets.INIT_SQL }}" > init.sql
-      #     echo "Created init.sql from secret"
+      #     cd tf-to-gke
+      #     TERRAFORM_IP=$(terraform output -raw public_ip | awk 'match($0, /([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)/) {print substr($0, RSTART, RLENGTH); exit}')
+      #     echo "Extracted EC2_PUBLIC_IP: '$TERRAFORM_IP'"
+      #     echo "EC2_PUBLIC_IP=$TERRAFORM_IP" >> $GITHUB_ENV
+      #     echo "::set-output name=EC2_PUBLIC_IP::$TERRAFORM_IP"
 
-      # - name: Create or Update ConfigMap for init.sql
-      #   run: |
-      #     kubectl create configmap init-sql-config --from-file=init.sql --namespace=default --dry-run=client -o yaml | kubectl apply -f -
-      #     echo "ConfigMap init-sql-config created/updated"
 
-      - name: Add Helm Repository
-        run: |
-          helm repo add spacecapy https://AlexandraFefler.github.io/spacecapy-helm-chart
-          helm repo update
+      # - name: Store EC2 Public IP as GitHub Actions Environment Variable
+      #   run: echo "EC2_PUBLIC_IP=${{ env.EC2_PUBLIC_IP }}" > $GITHUB_ENV
+      
+      # - name: Sleep to give the instance time to initialize before deployment
+      #   run: sleep 200
+      
 
-      - name: Deploy to GKE with Helm
-        run: |
-          helm upgrade --install spacecapybara-rel spacecapy/spacecapybara-chart \
-            --namespace default \
-            --set image.repository=${{ secrets.DOCKER_HUB_USERNAME }}/spacecapybara_app \
-            --set image.tag=1.0.${{ github.run_number }} \
-            --atomic
-        # --atomic flag for auto-rollback if helm deployment did't succeed. Gotta add a FAILURE CHECK here and if helm upgrade really didn't work, then catch that in the workflow and fail the whole pipeline with a proper message.
 
-      # - name: Deploy to GKE
-      #   run: |
-      #     kubectl apply -f k8sDeployment.yaml
-        # kubectl rollout status deployment/k8sdeployment -n YOUR_NAMESPACE
 
-      - name: Get External IP of Space Capybara Service
-        run: |
-          echo "Waiting for external IP..."
-          for i in {1..10}; do
-            EXTERNAL_IP=$(kubectl get svc space-capybara-web --namespace default --output=jsonpath='{.status.loadBalancer.ingress[0].ip}')
-            if [ -n "$EXTERNAL_IP" ]; then
-              echo "Space capy running at: http://$EXTERNAL_IP:5002"
-              exit 0
-            fi
-            echo "Waiting for LoadBalancer IP to be assigned... ($i/10)"
-            sleep 10
-          done
-          echo "❌ ERROR: Timed out waiting for external IP!" && exit 1
+
+
+  # gke-deployment:
+  #   runs-on: ubuntu-latest
+  #   needs: [build-and-push, test-container]
+
+  #   steps:
+  #     - name: Check out repository
+  #       uses: actions/checkout@v4
+
+  #     - name: Authenticate with GCP
+  #       uses: google-github-actions/auth@v2
+  #       with:
+  #         credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
+  #     - name: Configure gcloud CLI
+  #       uses: google-github-actions/setup-gcloud@v2
+  #       with:
+  #         project_id: automated-lodge-449109-b9
+
+  #     - name: Install GKE Auth Plugin
+  #       run: |
+  #         gcloud components install gke-gcloud-auth-plugin
+
+  #     - name: Get GKE Cluster Credentials
+  #       run: |
+  #         gcloud container clusters get-credentials automated-lodge-449109-b9-gke --region us-central1 --project automated-lodge-449109-b9
+  #         kubectl cluster-info  # Debugging step to verify the connection
+
+  #     # - name: Create init.sql from Secret
+  #     #   run: |
+  #     #     echo "${{ secrets.INIT_SQL }}" > init.sql
+  #     #     echo "Created init.sql from secret"
+
+  #     # - name: Create or Update ConfigMap for init.sql
+  #     #   run: |
+  #     #     kubectl create configmap init-sql-config --from-file=init.sql --namespace=default --dry-run=client -o yaml | kubectl apply -f -
+  #     #     echo "ConfigMap init-sql-config created/updated"
+
+  #     - name: Add Helm Repository
+  #       run: |
+  #         helm repo add spacecapy https://AlexandraFefler.github.io/spacecapy-helm-chart
+  #         helm repo update
+
+  #     - name: Deploy to GKE with Helm
+  #       run: |
+  #         helm upgrade --install spacecapybara-rel spacecapy/spacecapybara-chart \
+  #           --namespace default \
+  #           --set image.repository=${{ secrets.DOCKER_HUB_USERNAME }}/spacecapybara_app \
+  #           --set image.tag=1.0.${{ github.run_number }} \
+  #           --atomic
+  #       # --atomic flag for auto-rollback if helm deployment did't succeed. Gotta add a FAILURE CHECK here and if helm upgrade really didn't work, then catch that in the workflow and fail the whole pipeline with a proper message.
+
+  #     # - name: Deploy to GKE
+  #     #   run: |
+  #     #     kubectl apply -f k8sDeployment.yaml
+  #       # kubectl rollout status deployment/k8sdeployment -n YOUR_NAMESPACE
+
+  #     - name: Get External IP of Space Capybara Service
+  #       run: |
+  #         echo "Waiting for external IP..."
+  #         for i in {1..10}; do
+  #           EXTERNAL_IP=$(kubectl get svc space-capybara-web --namespace default --output=jsonpath='{.status.loadBalancer.ingress[0].ip}')
+  #           if [ -n "$EXTERNAL_IP" ]; then
+  #             echo "Space capy running at: http://$EXTERNAL_IP:5002"
+  #             exit 0
+  #           fi
+  #           echo "Waiting for LoadBalancer IP to be assigned... ($i/10)"
+  #           sleep 10
+  #         done
+  #         echo "❌ ERROR: Timed out waiting for external IP!" && exit 1

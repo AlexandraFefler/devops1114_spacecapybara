@@ -13,16 +13,20 @@ variable "gke_num_nodes" {
   description = "number of gke nodes"
 }
 
+variable "zone" {
+  description = "GKE cluster zone"
+}
+
 # GKE cluster version data
 data "google_container_engine_versions" "gke_version" {
-  location       = var.region
+  location       = var.zone
   version_prefix = "1.31."
 }
 
 # GKE Cluster without a default node pool
 resource "google_container_cluster" "primary" {
   name     = "${var.project_id}-gke"
-  location = var.region
+  location = var.zone
 
   networking_mode = "VPC_NATIVE"
   network    = google_compute_network.vpc.name
@@ -44,7 +48,7 @@ resource "google_container_cluster" "primary" {
 # Separately Managed Node Pool
 resource "google_container_node_pool" "primary_nodes" {
   name       = "${google_container_cluster.primary.name}-node-pool"
-  location   = var.region
+  location   = var.zone
   cluster    = google_container_cluster.primary.name
   version    = google_container_cluster.primary.min_master_version  # Add this line
   node_count = var.gke_num_nodes
