@@ -200,7 +200,7 @@ jobs:
 
       - name: Get GKE Cluster Credentials
         run: |
-          gcloud container clusters get-credentials workflow-spacecapy --zone us-central1-c --project automated-lodge-449109-b9
+          gcloud container clusters get-credentials automated-lodge-449109-b9-gke --region us-central1 --project automated-lodge-449109-b9
           kubectl cluster-info  # Debugging step to verify the connection
 
       # - name: Create init.sql from Secret
