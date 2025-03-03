@@ -109,16 +109,15 @@ jobs:
     needs: [build-and-push, test-container]
 
     outputs:
-      GKE_CLUSTER_NAME: ${{ steps.get-gke-info.outputs.GKE_CLUSTER_NAME }}
-      GKE_ZONE: ${{ steps.get-gke-info.outputs.GKE_ZONE }}
-      GCP_PROJECT_ID: ${{ steps.get-gke-info.outputs.GCP_PROJECT_ID }}
+      GKE_CLUSTER_NAME: ${{ env.GKE_CLUSTER_NAME }}
+      GKE_ZONE: ${{ env.GKE_ZONE }}
+      GCP_PROJECT_ID: ${{ env.GCP_PROJECT_ID }}
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
       
-      ###_________________Google auth start________________###
-
+      ###_________________Google Auth Start________________###
       - name: Authenticate with GCP
         uses: google-github-actions/auth@v2
         with:
@@ -132,15 +131,7 @@ jobs:
       - name: Install GKE Auth Plugin
         run: |
           gcloud components install gke-gcloud-auth-plugin
-
-      ###_________________Google auth end__________________###
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1 
+      ###_________________Google Auth End__________________###
 
       - name: Move to Terraform directory
         run: cd tf-to-gke
@@ -165,32 +156,24 @@ jobs:
         id: get-gke-info
         run: |
           cd tf-to-gke
-          
-          # Extract only the text before "::debug"
-          CLUSTER_NAME=$(terraform output -raw kubernetes_cluster_name | awk -F'::' '{print $1}')
-          ZONE=$(terraform output -raw zone | awk -F'::' '{print $1}')
-          PROJECT_ID=$(terraform output -raw project_id | awk -F'::' '{print $1}')
+
+          # Extract clean Terraform outputs
+          CLUSTER_NAME=$(terraform output -raw kubernetes_cluster_name | tr -d '\r' | awk '{print $1}')
+          ZONE=$(terraform output -raw zone | tr -d '\r' | awk '{print $1}')
+          PROJECT_ID=$(terraform output -raw project_id | tr -d '\r' | awk '{print $1}')
 
           echo "__________The passed details from output:__________"
-          echo $CLUSTER_NAME
+          echo "GKE_CLUSTER_NAME: $CLUSTER_NAME"
           echo "__________________b o n k___________________"
-          echo $ZONE
+          echo "GKE_ZONE: $ZONE"
           echo "__________________b o n k___________________"
-          echo $PROJECT_ID
+          echo "GCP_PROJECT_ID: $PROJECT_ID"
           echo "__________________b o n k___________________"
-          
 
-          echo "Extracted GKE_CLUSTER_NAME: $CLUSTER_NAME"
-          echo "Extracted GKE_ZONE: $ZONE"
-          echo "Extracted GCP_PROJECT_ID: $PROJECT_ID"
-
+          # Store in Environment Variables (new method)
           echo "GKE_CLUSTER_NAME=$CLUSTER_NAME" >> $GITHUB_ENV
           echo "GKE_ZONE=$ZONE" >> $GITHUB_ENV
           echo "GCP_PROJECT_ID=$PROJECT_ID" >> $GITHUB_ENV
-
-          echo "::set-output name=GKE_CLUSTER_NAME::$CLUSTER_NAME"
-          echo "::set-output name=GKE_ZONE::$ZONE"
-          echo "::set-output name=GCP_PROJECT_ID::$PROJECT_ID"
 
       - name: Sleep to give the cluster time before deployment
         run: sleep 60
