@@ -117,7 +117,8 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
       
-      ###_________________Google Auth Start________________###
+      ###_________________Google auth start________________###
+
       - name: Authenticate with GCP
         uses: google-github-actions/auth@v2
         with:
@@ -131,7 +132,15 @@ jobs:
       - name: Install GKE Auth Plugin
         run: |
           gcloud components install gke-gcloud-auth-plugin
-      ###_________________Google Auth End__________________###
+
+      ###_________________Google auth end__________________###
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1 
 
       - name: Move to Terraform directory
         run: cd tf-to-gke
@@ -152,29 +161,29 @@ jobs:
           terraform apply --auto-approve
           echo "_____________________done_______________________"
 
-      - name: Extract GKE Cluster Information
-        id: get-gke-info
-        run: |
-          cd tf-to-gke
-
-          # Extract clean Terraform outputs
-          CLUSTER_NAME=$(terraform output -raw kubernetes_cluster_name | tr -d '\r' | awk '{print $1}')
-          ZONE=$(terraform output -raw zone | tr -d '\r' | awk '{print $1}')
-          PROJECT_ID=$(terraform output -raw project_id | tr -d '\r' | awk '{print $1}')
-
-          echo "__________The passed details from output:__________"
-          echo "GKE_CLUSTER_NAME: $CLUSTER_NAME"
-          echo "__________________b o n k___________________"
-          echo "GKE_ZONE: $ZONE"
-          echo "__________________b o n k___________________"
-          echo "GCP_PROJECT_ID: $PROJECT_ID"
-          echo "__________________b o n k___________________"
-
-          # Store in Environment Variables (new method)
-          echo "GKE_CLUSTER_NAME=$CLUSTER_NAME" >> $GITHUB_ENV
-          echo "GKE_ZONE=$ZONE" >> $GITHUB_ENV
-          echo "GCP_PROJECT_ID=$PROJECT_ID" >> $GITHUB_ENV
-
+          - name: Extract GKE Cluster Information
+          id: get-gke-info
+          run: |
+            cd tf-to-gke
+    
+            # Extract clean Terraform outputs
+            CLUSTER_NAME=$(terraform output -raw kubernetes_cluster_name | tr -d '\r' | awk '{print $1}')
+            ZONE=$(terraform output -raw zone | tr -d '\r' | awk '{print $1}')
+            PROJECT_ID=$(terraform output -raw project_id | tr -d '\r' | awk '{print $1}')
+    
+            echo "__________The passed details from output:__________"
+            echo "GKE_CLUSTER_NAME: $CLUSTER_NAME"
+            echo "__________________b o n k___________________"
+            echo "GKE_ZONE: $ZONE"
+            echo "__________________b o n k___________________"
+            echo "GCP_PROJECT_ID: $PROJECT_ID"
+            echo "__________________b o n k___________________"
+    
+            # Store in Environment Variables (new method)
+            echo "GKE_CLUSTER_NAME=$CLUSTER_NAME" >> $GITHUB_ENV
+            echo "GKE_ZONE=$ZONE" >> $GITHUB_ENV
+            echo "GCP_PROJECT_ID=$PROJECT_ID" >> $GITHUB_ENV
+      
       - name: Sleep to give the cluster time before deployment
         run: sleep 60
 
