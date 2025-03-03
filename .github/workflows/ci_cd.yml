@@ -165,12 +165,17 @@ jobs:
         id: get-gke-info
         run: |
           cd tf-to-gke
-          terraform output -raw kubernetes_cluster_name
-          terraform output -raw zone
-          terraform output -raw project_id
-          CLUSTER_NAME=$(terraform output -raw kubernetes_cluster_name)
-          ZONE=$(terraform output -raw zone)
-          PROJECT_ID=$(terraform output -raw project_id)
+
+          echo "debug:"
+          terraform output -raw kubernetes_cluster_name | awk -F'::' '{print $1}'
+          terraform output -raw zone | awk -F'::' '{print $1}'
+          terraform output -raw project_id | awk -F'::' '{print $1}'
+
+          
+          # Extract only the text before "::debug"
+          CLUSTER_NAME=$(terraform output -raw kubernetes_cluster_name | awk -F'::' '{print $1}')
+          ZONE=$(terraform output -raw zone | awk -F'::' '{print $1}')
+          PROJECT_ID=$(terraform output -raw project_id | awk -F'::' '{print $1}')
 
 
           echo "__________The passed details from output:__________"
