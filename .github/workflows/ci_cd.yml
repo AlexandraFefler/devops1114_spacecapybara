@@ -183,19 +183,31 @@ jobs:
           gcloud container clusters get-credentials workflow-spacecapy --zone us-central1-c --project automated-lodge-449109-b9
           kubectl cluster-info  # Debugging step to verify the connection
 
-      - name: Create init.sql from Secret
+      # - name: Create init.sql from Secret
+      #   run: |
+      #     echo "${{ secrets.INIT_SQL }}" > init.sql
+      #     echo "Created init.sql from secret"
+
+      # - name: Create or Update ConfigMap for init.sql
+      #   run: |
+      #     kubectl create configmap init-sql-config --from-file=init.sql --namespace=default --dry-run=client -o yaml | kubectl apply -f -
+      #     echo "ConfigMap init-sql-config created/updated"
+
+      - name: Add Helm Repository
         run: |
-          echo "${{ secrets.INIT_SQL }}" > init.sql
-          echo "Created init.sql from secret"
+          helm repo add spacecapy https://AlexandraFefler.github.io/spacecapy-helm-chart
+          helm repo update
 
-      - name: Create or Update ConfigMap for init.sql
+      - name: Deploy to GKE with Helm
         run: |
-          kubectl create configmap init-sql-config --from-file=init.sql --namespace=default --dry-run=client -o yaml | kubectl apply -f -
-          echo "ConfigMap init-sql-config created/updated"
+          helm upgrade --install spacecapybara-rel spacecapy/spacecapybara-chart \
+            --namespace default \
+            --set image.repository=${{ secrets.DOCKER_HUB_USERNAME }}/spacecapybara_app \
+            --set image.tag=1.0.${{ github.run_number }} \
+            --atomic
 
-
-
-      - name: Deploy to GKE
-        run: |
-          kubectl apply -f k8sDeployment.yaml
+      # - name: Deploy to GKE
+      #   run: |
+      #     kubectl apply -f k8sDeployment.yaml
+      #     helm install 
         # kubectl rollout status deployment/k8sdeployment -n YOUR_NAMESPACE
