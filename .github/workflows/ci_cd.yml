@@ -104,9 +104,68 @@ jobs:
       - name: Stop and Clean Up Containers
         run: docker compose down
 
-  gke-infrastructure-provisioning:
+
+
+
+  build-and-publish-helm:
     runs-on: ubuntu-latest
     needs: [build-and-push, test-container]
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Create init.sql from Secret
+        run: | 
+          mkdir -p spacecapybara-chart/files  # Ensure directory exists
+          echo "${{ secrets.INIT_SQL }}" > spacecapybara-chart/files/init.sql
+          echo "Created spacecapybara-chart/files/init.sql from secret"
+
+      - name: Update Chart Version
+        run: |
+          CHART_FILE="spacecapybara-chart/Chart.yaml"
+          CURRENT_VERSION=$(grep '^version:' $CHART_FILE | awk '{print $2}')
+
+          echo "_________The current version variable content:_________"
+          grep '^version:' $CHART_FILE | awk '{print $2}'
+
+          MAJOR=$(echo $CURRENT_VERSION | cut -d. -f1)
+          MINOR=$(echo $CURRENT_VERSION | cut -d. -f2)
+          PATCH=$(echo $CURRENT_VERSION | cut -d. -f3)
+          NEW_PATCH=$((PATCH + 1))
+          NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
+          sed -i "s/^version:.*/version: $NEW_VERSION/" $CHART_FILE
+          echo "Updated Helm chart version to $NEW_VERSION"
+
+      - name: Package Helm Chart
+        run: |
+          cd spacecapybara-chart
+          helm package .
+          mv spacecapybara-chart-*.tgz ../../
+
+      - name: Clone Helm Repository
+        run: |
+          git clone https://github.com/AlexandraFefler/spacecapy-helm-chart.git
+          cd spacecapy-helm-chart
+          git config user.name "AlexandraFefler"
+          git remote set-url origin https://x-access-token:${{ secrets.SPACECAPY_HELM_PAT }}@github.com/AlexandraFefler/spacecapy-helm-chart.git
+
+      - name: Move Helm Package to Repo & Update Index
+        run: |
+          mv spacecapybara-chart-*.tgz spacecapy-helm-chart/
+          cd spacecapy-helm-chart
+          helm repo index . --url https://AlexandraFefler.github.io/spacecapy-helm-chart
+          git add .
+          git commit -m "Updated Helm chart to new version"
+          git push origin main
+
+
+
+
+
+  gke-infrastructure-provisioning:
+    runs-on: ubuntu-latest
+    needs: [build-and-push, test-container, build-and-publish-helm]
 
     outputs:
       GKE_CLUSTER_NAME: ${{ env.GKE_CLUSTER_NAME }}
@@ -205,7 +264,7 @@ jobs:
 
   gke-deployment:
     runs-on: ubuntu-latest
-    needs: [build-and-push, test-container, gke-infrastructure-provisioning]
+    needs: [build-and-push, test-container, build-and-publish-helm, gke-infrastructure-provisioning]
 
     steps:
       - name: Check out repository
