@@ -147,6 +147,7 @@ jobs:
 
       - name: Clone Helm Repository
         run: |
+          pwd
           git clone https://github.com/AlexandraFefler/spacecapy-helm-chart.git
           cd spacecapy-helm-chart
           git config user.name "AlexandraFefler"
@@ -154,7 +155,7 @@ jobs:
 
       - name: Move Helm Package to Repo & Update Index
         run: |
-          mv spacecapybara-chart-*.tgz spacecapy-helm-chart/
+          mv spacecapybara-chart/spacecapybara-chart-*.tgz spacecapy-helm-chart/
           echo "__________________DEBUG___________________"
           pwd
           ls
@@ -250,7 +251,7 @@ jobs:
           echo "GCP_PROJECT_ID=$PROJECT_ID" >> $GITHUB_ENV
       
       - name: Sleep to give the cluster time before deployment
-        run: sleep 60
+        run: sleep 20
 
       # - name: Get EC2 Public IP
       #   id: get-ec2-ip
