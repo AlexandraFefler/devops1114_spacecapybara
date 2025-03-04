@@ -155,7 +155,8 @@ jobs:
 
       - name: Move Helm Package to Repo & Update Index
         run: |
-          mv spacecapybara-chart/spacecapybara-chart-*.tgz spacecapy-helm-chart/
+          ls
+          mv spacecapybara-chart-*.tgz spacecapy-helm-chart/
           echo "__________________DEBUG___________________"
           pwd
           ls
