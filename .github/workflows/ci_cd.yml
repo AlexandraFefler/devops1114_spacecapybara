@@ -340,6 +340,26 @@ jobs:
       #     kubectl apply -f k8sDeployment.yaml
         # kubectl rollout status deployment/k8sdeployment -n YOUR_NAMESPACE
 
+      - name: Install Prometheus
+        run: |
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo update
+          helm upgrade --install prometheus prometheus-community/kube-prometheus-stack \
+            --namespace monitoring --create-namespace \
+            --set prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues=false
+
+      - name: Install Grafana
+        run: |
+          helm repo add grafana https://grafana.github.io/helm-charts
+          helm repo update
+          helm upgrade --install grafana grafana/grafana \
+            --namespace monitoring \
+            --set adminPassword=admin # might want to put this in a secret later
+
+      - name: Apply Custom Prometheus Config
+        run: |
+          kubectl apply -f prometheus-config.yaml
+
       - name: Get External IP of Space Capybara Service
         run: |
           echo "Waiting for external IP..."
