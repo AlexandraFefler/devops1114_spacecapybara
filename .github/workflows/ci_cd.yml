@@ -265,7 +265,7 @@ jobs:
           mkdir -p files  # Ensure directory exists
           echo "${{ secrets.INIT_SQL }}" > files/init.sql
           echo "Created files/init.sql from secret"
-          
+
       - name: Update Chart Version
         run: |
           CHART_FILE="spacecapybara-chart/Chart.yaml"
@@ -290,13 +290,21 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          # Ensure no unstaged changes block rebase
+          git add -A
+          git stash || true  # 🔥 Stash unstaged changes to prevent blocking pull
+          
           # Pull the latest changes to avoid conflicts
           git pull --rebase origin main || echo "No remote changes to rebase"
+          
+          git stash pop || true  # 🔥 Restore stashed changes if needed
+
           git add spacecapybara-chart/Chart.yaml
           git commit -m "CI: Bump Helm chart version [skip ci]" || echo "No changes to commit"
-          # 🔥 Force push only if rebase was needed
+          
+          # Push updated Chart.yaml
           git push origin main || (git pull --rebase origin main && git push origin main)
-        # git push origin main
     
 
 
