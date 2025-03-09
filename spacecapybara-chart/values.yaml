@@ -3,7 +3,7 @@ replicaCount: 3
 
 image:
   repository: sashafefler/spacecapybara_app
-  tag: latest
+  tag: latest # placeholder, when deploying on cluster - always setting this to the specific built and tested version
 
 mysql:
   rootPassword: "admin" # better put this in a secret too, next
