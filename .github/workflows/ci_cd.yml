@@ -242,8 +242,15 @@ jobs:
           ls
           echo "__________________DEBUG___________________"
           cd spacecapy-helm-chart
+          
 
+          helm repo index . --url https://AlexandraFefler.github.io/spacecapy-helm-chart
+          git add .
+          git commit -m "Updated Helm chart to new version"
+          git push origin main
 
+      - name: Cleanuip
+        run: |
           # Cleanup old Helm charts before committing
           echo "_______Cleaning up to keep 5 newest chart versions_______"
           
@@ -263,12 +270,12 @@ jobs:
           else
             echo "No cleanup needed, less than or equal to 5 versions present."
           fi
-          
-          
+
           helm repo index . --url https://AlexandraFefler.github.io/spacecapy-helm-chart
           git add .
           git commit -m "Updated Helm chart to new version"
           git push origin main
+
 
 
 
@@ -464,6 +471,7 @@ jobs:
       - name: Apply Custom Prometheus Config
         run: |
           kubectl apply -f prometheus-config.yaml
+        # add check if this is already applied ig (maybe by the config map it creates if it ddid run b4)
 
       - name: Restart Prometheus Server Pod
         run: |
