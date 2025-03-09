@@ -242,6 +242,19 @@ jobs:
           ls
           echo "__________________DEBUG___________________"
           cd spacecapy-helm-chart
+
+          # Cleanup old Helm charts before committing
+          echo "_______Cleaning up to keep 5 newest chart versions_______"
+          CHART_FILES=$(ls -t spacecapybara-chart-*.tgz 2>/dev/null || echo "")
+          TOTAL_CHARTS=$(echo "$CHART_FILES" | wc -l)
+          if [ "$TOTAL_CHARTS" -gt 5 ]; then
+            DELETE_COUNT=$((TOTAL_CHARTS - 5))
+            echo "Found $TOTAL_CHARTS chart versions, deleting $DELETE_COUNT old versions..."
+            echo "$CHART_FILES" | tail -n $DELETE_COUNT | xargs rm -f
+          else
+            echo "No cleanup needed, less than or equal to 5 versions present."
+          fi
+
           helm repo index . --url https://AlexandraFefler.github.io/spacecapy-helm-chart
           git add .
           git commit -m "Updated Helm chart to new version"
