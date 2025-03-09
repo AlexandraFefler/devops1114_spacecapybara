@@ -190,17 +190,18 @@ jobs:
           echo "Updated Helm chart version to $NEW_VERSION"
 
 
-      - name: Configure Git Credentials (Main Repo)
+      - name: Configure Git Credentials
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git remote set-url origin https://x-access-token:${{ secrets.SPACECAPY_HELM_PAT }}@github.com/AlexandraFefler/devops1114_spacecapybara.git
 
 
+
       - name: Commit Updated Chart.yaml
         run: |
-          git config user.name "AlexandraFefler"
-          git config user.email "AlexandraFefler@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add spacecapybara-chart/Chart.yaml
           git commit -m "CI: Bump Helm chart version [skip ci]" || echo "No changes to commit"
           git push origin main
