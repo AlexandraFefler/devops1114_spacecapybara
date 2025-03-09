@@ -355,7 +355,7 @@ jobs:
           helm repo update
           helm upgrade --install grafana grafana/grafana \
             --namespace monitoring \
-            --set adminPassword=admin \ 
+            --set adminPassword=admin \
             --set grafana.security.disableInitialAdminPasswordChange=true
         # might want to put admin password in a GHA secret later
 
