@@ -212,7 +212,7 @@ jobs:
           git add spacecapybara-chart/Chart.yaml
           git commit -m "CI: Bump Helm chart version [skip ci]" || echo "No changes to commit"
 
-          # 🔥 Force push only if rebase was needed
+          # Force push only if rebase was needed
           git push origin main || (git pull --rebase origin main && git push origin main)
         # git push origin main
  
@@ -233,7 +233,7 @@ jobs:
 
       
 
-      - name: Move Helm Package to Repo & Update Index
+      - name: Move Helm Package to Repo and Update Index
         run: |
           ls
           mv spacecapybara-chart-*.tgz spacecapy-helm-chart/
