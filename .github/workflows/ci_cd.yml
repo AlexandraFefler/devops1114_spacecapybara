@@ -161,6 +161,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build-and-push, test-container]
 
+    permissions:
+      contents: write  # ✅ Ensure write access for GitHub Actions
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -192,9 +195,9 @@ jobs:
 
       - name: Configure Git Credentials
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git remote set-url origin https://x-access-token:${{ secrets.SPACECAPY_HELM_PAT }}@github.com/AlexandraFefler/devops1114_spacecapybara.git
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/AlexandraFefler/devops1114_spacecapybara.git
 
 
 
