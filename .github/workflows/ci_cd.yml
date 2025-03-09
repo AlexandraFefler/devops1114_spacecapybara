@@ -205,9 +205,16 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Pull the latest changes to avoid conflicts
+          git pull --rebase origin main || echo "No remote changes to rebase"
+
           git add spacecapybara-chart/Chart.yaml
           git commit -m "CI: Bump Helm chart version [skip ci]" || echo "No changes to commit"
-          git push origin main
+
+          # 🔥 Force push only if rebase was needed
+          git push origin main || (git pull --rebase origin main && git push origin main)
+        # git push origin main
  
       - name: Package Helm Chart
         run: |
