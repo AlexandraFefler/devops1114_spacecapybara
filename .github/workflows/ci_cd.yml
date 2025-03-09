@@ -232,50 +232,50 @@ jobs:
           git remote set-url origin https://x-access-token:${{ secrets.SPACECAPY_HELM_PAT }}@github.com/AlexandraFefler/spacecapy-helm-chart.git
 
       
-          - name: Move Helm Package to Repo and Clean Up Old Versions
-          run: |
-            ls
-            mv spacecapybara-chart-*.tgz spacecapy-helm-chart/
-            echo "__________________DEBUG___________________"
-            pwd
-            ls
-            echo "__________________DEBUG___________________"
-            cd spacecapy-helm-chart
-            
-            # Cleanup old Helm charts before committing
-            echo "_______Cleaning up to keep 5 newest chart versions_______"
-            
-            # Get list of chart files sorted oldest first
-            CHART_FILES=($(ls -tr spacecapybara-chart-*.tgz 2>/dev/null || echo ""))
-            TOTAL_CHARTS=${#CHART_FILES[@]}
-  
-            if [ "$TOTAL_CHARTS" -gt 5 ]; then
-              DELETE_COUNT=$((TOTAL_CHARTS - 5))
-              echo "Found $TOTAL_CHARTS chart versions, deleting $DELETE_COUNT oldest versions..."
-  
-              # Keep the last 5 (newest) and delete the rest
-              for ((i=0; i<DELETE_COUNT; i++)); do
-                echo "Deleting: ${CHART_FILES[$i]}"
-                rm -f "${CHART_FILES[$i]}"
-              done
-            else
-              echo "No cleanup needed, less than or equal to 5 versions present."
-            fi
-  
-            # Ensure index.yaml and README.md are NOT deleted
-            echo "Ensuring important files remain..."
-            git checkout -- README.md index.yaml || true
-  
-            # Rebuild Helm repo index
-            helm repo index . --url https://AlexandraFefler.github.io/spacecapy-helm-chart
-  
-            # Fix the embedded Git issue (remove submodule reference)
-            cd ..
-            git rm -r --cached spacecapy-helm-chart || true
-            git add spacecapy-helm-chart
-            git commit -m "Updated Helm chart to new version and cleaned old versions"
-            git push origin main
-  
+      - name: Move Helm Package to Repo and Clean Up Old Versions
+        run: |
+          ls
+          mv spacecapybara-chart-*.tgz spacecapy-helm-chart/
+          echo "__________________DEBUG___________________"
+          pwd
+          ls
+          echo "__________________DEBUG___________________"
+          cd spacecapy-helm-chart
+          
+          # Cleanup old Helm charts before committing
+          echo "_______Cleaning up to keep 5 newest chart versions_______"
+          
+          # Get list of chart files sorted oldest first
+          CHART_FILES=($(ls -tr spacecapybara-chart-*.tgz 2>/dev/null || echo ""))
+          TOTAL_CHARTS=${#CHART_FILES[@]}
+
+          if [ "$TOTAL_CHARTS" -gt 5 ]; then
+            DELETE_COUNT=$((TOTAL_CHARTS - 5))
+            echo "Found $TOTAL_CHARTS chart versions, deleting $DELETE_COUNT oldest versions..."
+
+            # Keep the last 5 (newest) and delete the rest
+            for ((i=0; i<DELETE_COUNT; i++)); do
+              echo "Deleting: ${CHART_FILES[$i]}"
+              rm -f "${CHART_FILES[$i]}"
+            done
+          else
+            echo "No cleanup needed, less than or equal to 5 versions present."
+          fi
+
+          # Ensure index.yaml and README.md are NOT deleted
+          echo "Ensuring important files remain..."
+          git checkout -- README.md index.yaml || true
+
+          # Rebuild Helm repo index
+          helm repo index . --url https://AlexandraFefler.github.io/spacecapy-helm-chart
+
+          # Fix the embedded Git issue (remove submodule reference)
+          cd ..
+          git rm -r --cached spacecapy-helm-chart || true
+          git add spacecapy-helm-chart
+          git commit -m "Updated Helm chart to new version and cleaned old versions"
+          git push origin main
+    
 
 
 
