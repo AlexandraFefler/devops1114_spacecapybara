@@ -418,14 +418,14 @@ jobs:
           cd spacecapy-helm-chart
           echo "🔍 Listing Helm chart files (excluding index.yaml & Chart.yaml)..."
 
-          # Get list of chart files sorted by version ascending (oldest first)
-          CHART_FILES=($(ls -tr spacecapybara-chart-*.tgz 2>/dev/null || echo ""))
+          # Get list of chart files sorted properly by version (natural sorting)
+          CHART_FILES=($(ls -v spacecapybara-chart-*.tgz 2>/dev/null || echo ""))
           TOTAL_CHARTS=${#CHART_FILES[@]}
 
           echo "📊 Found $TOTAL_CHARTS chart versions."
 
           if [ "$TOTAL_CHARTS" -gt 5 ]; then
-            # Last 5 files (newest ones) are the keepers
+            # Correctly extract the last 5 files (newest ones)
             KEEP_FILES=("${CHART_FILES[@]: -5}")  
             
             echo "✅ These files will be kept:"
