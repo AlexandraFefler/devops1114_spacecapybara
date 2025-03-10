@@ -1,0 +1,62 @@
+# Ignore Helm-specific files
+.DS_Store
+# Ignore version control directories
+.git/
+.gitignore
+# Ignore temporary files
+*.swp
+*.bak
+*.tmp
+*.log
+*.lock
+*.cache
+
+# Ignore OS-specific files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Ignore Python-related files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+*.venv
+.env
+.vscode/
+.idea/
+
+# Ignore Helm-related files
+# Avoid including old chart packages in new releases
+*.tgz
+helm-test-logs/
+
+# Ignore Docker-related files
+.dockerignore
+docker-compose.yaml
+Dockerfile
+
+# Ignore secrets
+secrets.env
+secrets.yaml
+*.key
+*.pem
+
+# Ignore database dumps or migrations
+*.sql
+migrations/
+
+# Ignore CI/CD artifacts
+.github/
+*.tfstate
+terraform.tfvars
+terraform.tfstate.d/
+tfplan
+
+# Ignore unnecessary application files
+node_modules/
+npm-debug.log
+package-lock.json
+yarn.lock
+coverage/
