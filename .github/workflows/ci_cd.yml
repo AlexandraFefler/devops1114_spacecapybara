@@ -395,6 +395,37 @@ jobs:
             git commit -m "Updated Helm chart to new version"
             git push origin main
 
+
+
+  cleanup-old-helm-charts:
+    runs-on: ubuntu-latest
+    needs: build-and-publish-helm  # Runs after Helm chart is published
+
+    steps:
+      - name: Move to Safe Directory
+        run: |
+          cd ..
+          mkdir helm-cleanup
+          cd helm-cleanup
+
+      - name: Clone Helm Repository
+        run: |
+          git clone https://github.com/AlexandraFefler/spacecapy-helm-chart.git
+          cd spacecapy-helm-chart
+
+      - name: List Helm Chart Files in Descending Order
+        run: |
+          cd spacecapy-helm-chart
+          echo "🔍 Listing Helm chart files (excluding index.yaml & Chart.yaml)..."
+
+          # List files excluding index.yaml and Chart.yaml, sort by version descending
+          ls -t spacecapybara-chart-*.tgz 2>/dev/null || echo "No Helm chart files found."
+
+          echo "✅ Done listing files."
+          
+
+
+
   gke-infrastructure-provisioning:
     runs-on: ubuntu-latest
     needs: [build-and-push, test-container, build-and-publish-helm]
