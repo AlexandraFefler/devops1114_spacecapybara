@@ -10,28 +10,6 @@ on:
 
 jobs:
 
-  # DEBUGGG-gcp:
-  #   runs-on: ubuntu-latest
-
-  #   steps:
-  #     - name: Checkout Repository
-  #       uses: actions/checkout@v4
-
-  #     - name: Authenticate with GCP
-  #       uses: google-github-actions/auth@v2
-  #       with:
-  #         credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-
-  #     - name: Install gcloud CLI
-  #       uses: google-github-actions/setup-gcloud@v2
-  #       with:
-  #         project_id: automated-lodge-449109-b9
-
-  #     - name: Verify Authentication
-  #       run: |
-  #         gcloud auth list
-  #         echo "-------ended the gcp auth debug thing--------"
-
   build-and-push:
     runs-on: ubuntu-latest
 
@@ -190,16 +168,11 @@ jobs:
             sed -i "s/^version:.*/version: $NEW_VERSION/" $CHART_FILE
             echo "Updated Helm chart version to $NEW_VERSION"
 
-
-
-
-
         - name: Configure Git Credentials
           run: |
             git config --global user.name "github-actions"
             git config --global user.email "github-actions[bot]@users.noreply.github.com"
             git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/AlexandraFefler/devops1114_spacecapybara.git
-
 
         - name: Commit Updated Chart.yaml
           run: |
@@ -244,7 +217,6 @@ jobs:
             git add .
             git commit -m "Updated Helm chart to new version"
             git push origin main
-
 
   cleanup-old-helm-charts:
     runs-on: ubuntu-latest
@@ -308,13 +280,7 @@ jobs:
             echo "✅ No cleanup needed. Less than or equal to 5 versions present."
           fi
 
-        #   # Actually delete the old files
-        #   rm -f "${DELETE_FILES[@]}"
-        # else
-        #   echo "✅ No cleanup needed. Less than or equal to 5 versions present."
-            
-
-  gke-infrastructure-provisioning:
+  gke-infrastructure-provision:
     runs-on: ubuntu-latest
     needs: [build-and-push, test-container, build-and-publish-helm]
 
@@ -415,7 +381,7 @@ jobs:
 
   gke-deployment:
     runs-on: ubuntu-latest
-    needs: [build-and-push, test-container, build-and-publish-helm, gke-infrastructure-provisioning]
+    needs: [build-and-push, test-container, build-and-publish-helm, gke-infrastructure-provision]
 
     steps:
       - name: Check out repository
