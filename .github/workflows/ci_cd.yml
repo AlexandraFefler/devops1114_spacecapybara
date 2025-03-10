@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-  pull_request:  # ✅ Triggers on any pull request
+  pull_request:
     branches:
       - main  
 
@@ -38,15 +38,6 @@ jobs:
         run: |
           cd app
           docker push $DOCKERHUB_USER/spacecapybara_app:${VERSION}
-          
-      # - name: Push Docker image to Docker Hub (as latest stable)
-      #   env:
-      #     DOCKERHUB_USER: ${{ secrets.DOCKER_HUB_USERNAME }}
-      #     VERSION: 1.0.${{ github.run_number }}
-      #   run: |
-      #     cd app
-      #     docker tag $DOCKERHUB_USER/spacecapybara_app:${VERSION} $DOCKERHUB_USER/spacecapybara_app:latest
-      #     docker push $DOCKERHUB_USER/spacecapybara_app:latest
 
       - name: Install jq
         run: |
@@ -150,8 +141,6 @@ jobs:
           cd app
           docker tag $DOCKERHUB_USER/spacecapybara_app:${VERSION} $DOCKERHUB_USER/spacecapybara_app:latest
           docker push $DOCKERHUB_USER/spacecapybara_app:latest
-
-# TODO: push latest after test!! 
     
   build-and-publish-helm:
       runs-on: ubuntu-latest
