@@ -10,27 +10,27 @@ on:
 
 jobs:
 
-  DEBUGGG-gcp:
-    runs-on: ubuntu-latest
+  # DEBUGGG-gcp:
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@v4
 
-      - name: Authenticate with GCP
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+  #     - name: Authenticate with GCP
+  #       uses: google-github-actions/auth@v2
+  #       with:
+  #         credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
-      - name: Install gcloud CLI
-        uses: google-github-actions/setup-gcloud@v2
-        with:
-          project_id: automated-lodge-449109-b9
+  #     - name: Install gcloud CLI
+  #       uses: google-github-actions/setup-gcloud@v2
+  #       with:
+  #         project_id: automated-lodge-449109-b9
 
-      - name: Verify Authentication
-        run: |
-          gcloud auth list
-          echo "-------ended the gcp auth debug thing--------"
+  #     - name: Verify Authentication
+  #       run: |
+  #         gcloud auth list
+  #         echo "-------ended the gcp auth debug thing--------"
 
   build-and-push:
     runs-on: ubuntu-latest
@@ -155,156 +155,6 @@ jobs:
         run: docker compose down
 
 # TODO: push latest after test!! 
-
-
-  # build-and-publish-helm:
-  #   runs-on: ubuntu-latest
-  #   needs: [build-and-push, test-container]
-
-  #   permissions:
-  #     contents: write  # ✅ Ensure write access for GitHub Actions
-
-  #   steps:
-  #     - name: Check out repository
-  #       uses: actions/checkout@v4
-
-  #     - name: Create init.sql from Secret
-  #       run: | 
-  #         cd spacecapybara-chart
-  #         pwd
-  #         mkdir -p files  # Ensure directory exists
-  #         echo "${{ secrets.INIT_SQL }}" > files/init.sql
-  #         echo "Created files/init.sql from secret"
-
-  #     - name: Update Chart Version
-  #       run: |
-  #         CHART_FILE="spacecapybara-chart/Chart.yaml"
-  #         CURRENT_VERSION=$(grep '^version:' $CHART_FILE | awk '{print $2}')
-
-  #         echo "_________The current version variable content:__________"
-  #         grep '^version:' $CHART_FILE | awk '{print $2}'
-
-  #         MAJOR=$(echo $CURRENT_VERSION | cut -d. -f1)
-  #         MINOR=$(echo $CURRENT_VERSION | cut -d. -f2)
-  #         PATCH=$(echo $CURRENT_VERSION | cut -d. -f3)
-  #         NEW_PATCH=$((PATCH + 1))
-  #         NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
-  #         sed -i "s/^version:.*/version: $NEW_VERSION/" $CHART_FILE
-  #         echo "Updated Helm chart version to $NEW_VERSION"
-
-
-  #     - name: Configure Git Credentials
-  #       run: |
-  #         git config --global user.name "github-actions"
-  #         git config --global user.email "github-actions[bot]@users.noreply.github.com"
-  #         git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/AlexandraFefler/devops1114_spacecapybara.git
-
-
-
-  #     - name: Commit Updated Chart.yaml
-  #       run: |
-  #         git config --global user.name "github-actions[bot]"
-  #         git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-  #         # Pull the latest changes to avoid conflicts
-  #         git pull --rebase origin main || echo "No remote changes to rebase"
-
-  #         git add spacecapybara-chart/Chart.yaml
-  #         git commit -m "CI: Bump Helm chart version [skip ci]" || echo "No changes to commit"
-
-  #         # Force push only if rebase was needed
-  #         git push origin main || (git pull --rebase origin main && git push origin main)
-  #       # git push origin main
- 
-  #     - name: Package Helm Chart
-  #       run: |
-  #         cd spacecapybara-chart
-  #         helm package .
-  #         mv spacecapybara-chart-*.tgz ../
-
-  #     - name: Clone Helm Repository
-  #       run: |
-  #         pwd
-  #         git clone https://github.com/AlexandraFefler/spacecapy-helm-chart.git
-  #         cd spacecapy-helm-chart
-  #         git config user.name "AlexandraFefler"
-  #         git config user.email "AlexandraFefler@users.noreply.github.com"
-  #         git remote set-url origin https://x-access-token:${{ secrets.SPACECAPY_HELM_PAT }}@github.com/AlexandraFefler/spacecapy-helm-chart.git
-
-      
-  #     - name: Move Helm Package to Repo and Clean Up Old Versions
-  #       run: |
-  #         ls
-  #         mv spacecapybara-chart-*.tgz spacecapy-helm-chart/
-  #         echo "__________________DEBUG___________________"
-  #         pwd
-  #         ls
-  #         echo "__________________DEBUG___________________"
-  #         cd spacecapy-helm-chart
-
-  #         # Rebuild Helm repo index
-  #         helm repo index . --url https://AlexandraFefler.github.io/spacecapy-helm-chart
-
-
-  
-  # build-and-publish-helm:
-  #   runs-on: ubuntu-latest
-  #   needs: [build-and-push, test-container]
-
-  #   permissions:
-  #     contents: write  # ✅ Ensure write access for GitHub Actions
-
-  #   steps:
-  #     - name: Check out repository
-  #       uses: actions/checkout@v4
-
-  #     - name: Create init.sql from Secret
-  #       run: | 
-  #         cd spacecapybara-chart
-  #         pwd
-  #         mkdir -p files  # Ensure directory exists
-  #         echo "${{ secrets.INIT_SQL }}" > files/init.sql
-  #         echo "Created files/init.sql from secret"
-
-  #     - name: Update Chart Version
-  #       run: |
-  #         CHART_FILE="spacecapybara-chart/Chart.yaml"
-  #         CURRENT_VERSION=$(grep '^version:' $CHART_FILE | awk '{print $2}')
-  #         echo "_________The current version variable content:__________"
-  #         grep '^version:' $CHART_FILE | awk '{print $2}'
-  #         MAJOR=$(echo $CURRENT_VERSION | cut -d. -f1)
-  #         MINOR=$(echo $CURRENT_VERSION | cut -d. -f2)
-  #         PATCH=$(echo $CURRENT_VERSION | cut -d. -f3)
-  #         NEW_PATCH=$((PATCH + 1))
-  #         NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
-  #         sed -i "s/^version:.*/version: $NEW_VERSION/" $CHART_FILE
-  #         echo "Updated Helm chart version to $NEW_VERSION"
-
-  #     - name: Configure Git Credentials
-  #       run: |
-  #         git config --global user.name "github-actions"
-  #         git config --global user.email "github-actions[bot]@users.noreply.github.com"
-  #         git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/AlexandraFefler/devops1114_spacecapybara.git
-
-  #     - name: Commit Updated Chart.yaml
-  #       run: |
-  #         git config --global user.name "github-actions[bot]"
-  #         git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          
-  #         # Ensure no unstaged changes block rebase
-  #         git add -A
-  #         git stash || true  # 🔥 Stash unstaged changes to prevent blocking pull
-          
-  #         # Pull the latest changes to avoid conflicts
-  #         git pull --rebase origin main || echo "No remote changes to rebase"
-          
-  #         git stash pop || true  # 🔥 Restore stashed changes if needed
-
-  #         git add spacecapybara-chart/Chart.yaml
-  #         git commit -m "CI: Bump Helm chart version [skip ci]" || echo "No changes to commit"
-          
-  #         # Push updated Chart.yaml
-  #         git push origin main || (git pull --rebase origin main && git push origin main)
     
   build-and-publish-helm:
       runs-on: ubuntu-latest
@@ -396,7 +246,6 @@ jobs:
             git push origin main
 
 
-
   cleanup-old-helm-charts:
     runs-on: ubuntu-latest
     needs: build-and-publish-helm  # Runs after Helm chart is published
@@ -464,9 +313,6 @@ jobs:
         # else
         #   echo "✅ No cleanup needed. Less than or equal to 5 versions present."
             
-          
-
-
 
   gke-infrastructure-provisioning:
     runs-on: ubuntu-latest
