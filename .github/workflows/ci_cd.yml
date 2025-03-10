@@ -434,9 +434,19 @@ jobs:
             echo "❌ These files will be deleted:"
             for file in "${CHART_FILES[@]}"; do
               if [[ ! " ${KEEP_FILES[@]} " =~ " ${file} " ]]; then
-                echo "$file"
+                echo "🚨 Deleting: $file"
+                rm -f "$file"
               fi
             done
+
+            # Update Helm repo index after deletion
+            echo "🔄 Updating Helm repository index..."
+            helm repo index . --url https://AlexandraFefler.github.io/spacecapy-helm-chart
+
+            # Commit changes
+            git add .
+            git commit -m "Cleanup: Removed old Helm chart versions, keeping latest 5"
+            git push origin main
           else
             echo "✅ No cleanup needed. Less than or equal to 5 versions present."
           fi
