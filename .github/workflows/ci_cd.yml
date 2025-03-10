@@ -393,7 +393,7 @@ jobs:
           GKE_ZONE: ${{ needs.gke-infrastructure-provisioning.outputs.GKE_ZONE }}
           GCP_PROJECT_ID: ${{ needs.gke-infrastructure-provisioning.outputs.GCP_PROJECT_ID }}
         run: |
-          echo "Fetching GKE cluster credentials..."
+          echo "Fetching GKE cluster credentials... "
           gcloud container clusters get-credentials $GKE_CLUSTER_NAME --zone $GKE_ZONE --project $GCP_PROJECT_ID
           kubectl cluster-info  # Debugging step to verify the connection
 
