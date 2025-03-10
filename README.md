@@ -6,7 +6,7 @@ Space Capybara is a cloud-native web application that displays images from a dat
 ## Architecture and Workflow
 
 <p align="center">
-  <img src=![Image](https://github.com/user-attachments/assets/9bb724b1-8d61-4475-bbf0-71d86c73458e) alt="CI/CD Workflow">
+  <img src="https://github.com/user-attachments/assets/9bb724b1-8d61-4475-bbf0-71d86c73458e" alt="Image">
 </p>
 
 ### Key Features:
