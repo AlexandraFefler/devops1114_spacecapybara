@@ -85,11 +85,9 @@ Ensure you have the following installed:
 ---
 
 ## Security Considerations
+- **Secrets:** Use GitHub Secrets to manage API keys.
 - **Use Kubernetes Secrets:** Store database credentials securely.
 - **Limit Privileges:** Avoid running containers as root.
-- **Regularly Rotate Secrets:** Use GitHub Secrets to manage API keys.
-- **Image Scanning:** Ensure images are vulnerability-free before deployment.
-- **Enforce Role-Based Access Control (RBAC):** Restrict access to Kubernetes resources.
 
 ---
 
@@ -103,7 +101,7 @@ Ensure you have the following installed:
   ```sh
   kubectl port-forward svc/grafana 3000:80 -n monitoring
   ```
-  Navigate to `http://localhost:3000` and log in with `admin` (default password is set in Helm values).
+  Navigate to `http://localhost:3000` and log in with `admin` (default password is set with Helm).
 
 ---
 
@@ -117,16 +115,3 @@ Ensure you have the following installed:
 - **Older versions are deleted** via a GitHub Actions job.
 
 ---
-
-## Contributing
-1. **Fork the repository**
-2. **Create a new branch** (`feature-xyz`)
-3. **Commit changes** (`git commit -m 'Add new feature'`)
-4. **Push to GitHub** (`git push origin feature-xyz`)
-5. **Open a Pull Request**
-
----
-
-## License
-This project is licensed under the MIT License. See `LICENSE` for details.
-
