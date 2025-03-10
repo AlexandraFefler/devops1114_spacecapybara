@@ -66,9 +66,6 @@ def index():
     return render_template("index.html", visitors_count=count, url=url)
 
 # PROMETHEUS: Expose /metrics for Prometheus
-# @app.route("/metrics")
-# def metrics():
-#     return Response(generate_latest(), content_type=CONTENT_TYPE_LATEST)
 @app.route("/metrics")
 def metrics():
     # Fetch the visitors count directly from the database
@@ -87,14 +84,13 @@ def metrics():
     finally:
         connection.close()
 
-    # Instead of using the in-memory visitor_counter, create a fresh one with the actual DB value
+    # Instead of using the in-memory visitor_counter, create one with the actual DB value
     visitor_counter._value.set(visitors_count)  
 
     return Response(generate_latest(), content_type=CONTENT_TYPE_LATEST)
 
 
 if __name__ == "__main__":
-    # app.run(host="0.0.0.0", port=int(os.environ.get("WEB_PORT", 5000)))
     port = int(os.environ.get("WEB_PORT", 5002))
     print(f"Starting Flask app on port {port}")
     app.run(host="0.0.0.0", port=port) 
