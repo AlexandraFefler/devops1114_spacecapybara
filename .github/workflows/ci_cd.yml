@@ -489,7 +489,7 @@ jobs:
           helm repo update
           helm upgrade --install prometheus prometheus-community/prometheus \
             --namespace monitoring --create-namespace \
-            --set prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues=false # chat, is this needed now? what is this anyway? 
+            --set-file prometheus.configMapOverride=prometheus-config.yaml
 
       - name: Install Grafana
         run: |
@@ -501,15 +501,15 @@ jobs:
             --set grafana.security.disableInitialAdminPasswordChange=true
         # might want to put admin password in a GHA secret later
 
-      - name: Apply Custom Prometheus Config
-        run: |
-          kubectl apply -f prometheus-config.yaml
-        # add check if this is already applied ig (maybe by the config map it creates if it ddid run b4)
+      # - name: Apply Custom Prometheus Config
+      #   run: |
+      #     kubectl apply -f prometheus-config.yaml
+      #   # add check if this is already applied ig (maybe by the config map it creates if it ddid run b4)
 
-      - name: Restart Prometheus Server Pod
-        run: |
-          PROMETHEUS_POD=$(kubectl get pods -n monitoring -l app.kubernetes.io/name=prometheus -o jsonpath="{.items[0].metadata.name}")
-          kubectl delete pod $PROMETHEUS_POD -n monitoring
+      # - name: Restart Prometheus Server Pod
+      #   run: |
+      #     PROMETHEUS_POD=$(kubectl get pods -n monitoring -l app.kubernetes.io/name=prometheus -o jsonpath="{.items[0].metadata.name}")
+      #     kubectl delete pod $PROMETHEUS_POD -n monitoring
 
 
       - name: Get External IP of Space Capybara Service
