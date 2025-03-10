@@ -413,15 +413,37 @@ jobs:
           git clone https://github.com/AlexandraFefler/spacecapy-helm-chart.git
           cd spacecapy-helm-chart
 
-      - name: List Helm Chart Files in Descending Order
+      - name: List and Delete Old Helm Chart Files
         run: |
           cd spacecapy-helm-chart
           echo "🔍 Listing Helm chart files (excluding index.yaml & Chart.yaml)..."
 
-          # List files excluding index.yaml and Chart.yaml, sort by version descending
-          ls -t spacecapybara-chart-*.tgz 2>/dev/null || echo "No Helm chart files found."
+          # Get list of chart files sorted by version ascending (oldest first)
+          CHART_FILES=($(ls -t spacecapybara-chart-*.tgz 2>/dev/null || echo ""))
+          TOTAL_CHARTS=${#CHART_FILES[@]}
 
-          echo "✅ Done listing files."
+          echo "📊 Found $TOTAL_CHARTS chart versions."
+
+          if [ "$TOTAL_CHARTS" -gt 5 ]; then
+            DELETE_COUNT=$((TOTAL_CHARTS - 5))
+
+            echo "🚨 Deleting $DELETE_COUNT oldest chart versions..."
+            
+            # Files to delete (oldest ones)
+            DELETE_FILES=("${CHART_FILES[@]:DELETE_COUNT}")
+            echo "❌ These files will be deleted:"
+            printf "%s\n" "${DELETE_FILES[@]}"
+
+            # Files to keep (newest 5)
+            KEEP_FILES=("${CHART_FILES[@]:0:5}")
+            echo "✅ These files will be kept:"
+            printf "%s\n" "${KEEP_FILES[@]}"
+
+        #   # Actually delete the old files
+        #   rm -f "${DELETE_FILES[@]}"
+        # else
+        #   echo "✅ No cleanup needed. Less than or equal to 5 versions present."
+        # fi
           
 
 
