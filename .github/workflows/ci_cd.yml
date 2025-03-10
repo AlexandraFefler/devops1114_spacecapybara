@@ -135,7 +135,9 @@ jobs:
           fi
 
       - name: Stop and Clean Up Containers
-        run: docker compose down
+        run: |
+          cd app
+          docker compose down
 
 # TODO: push latest after test!! 
     
