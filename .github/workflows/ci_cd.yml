@@ -439,11 +439,13 @@ jobs:
             echo "✅ These files will be kept:"
             printf "%s\n" "${KEEP_FILES[@]}"
 
+          fi
+
         #   # Actually delete the old files
         #   rm -f "${DELETE_FILES[@]}"
         # else
         #   echo "✅ No cleanup needed. Less than or equal to 5 versions present."
-        # fi
+            
           
 
 
