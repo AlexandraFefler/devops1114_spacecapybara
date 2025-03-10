@@ -381,7 +381,7 @@ jobs:
             git config user.email "AlexandraFefler@users.noreply.github.com"
             git remote set-url origin https://x-access-token:${{ secrets.SPACECAPY_HELM_PAT }}@github.com/AlexandraFefler/spacecapy-helm-chart.git
 
-        - name: Move Helm Package to Repo and Update Index
+        - name: Move Helm Package to Repo & Update Index
           run: |
             ls
             mv spacecapybara-chart-*.tgz spacecapy-helm-chart/
