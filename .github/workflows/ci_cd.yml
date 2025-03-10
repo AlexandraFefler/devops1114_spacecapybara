@@ -115,8 +115,6 @@ jobs:
           echo "VERSION=${VERSION}" >> .env  # Inject variables into .env
           cat .env  # Debugging step to verify environment variables
           docker compose up -d --force-recreate
-        # run: |
-        #   DOCKERHUB_USER=$DOCKERHUB_USER VERSION=$VERSION docker compose up -d --force-recreate
       
       - name: Test Application with Curl
         run: |
@@ -139,7 +137,7 @@ jobs:
       needs: [build-and-push, test-container]
 
       permissions:
-        contents: write  # ✅ Ensure write access for GitHub Actions
+        contents: write  # Ensure write access for GitHub Actions
 
       steps:
         - name: Check out repository
@@ -187,7 +185,6 @@ jobs:
 
             # Force push only if rebase was needed
             git push origin main || (git pull --rebase origin main && git push origin main)
-          # git push origin main
 
         - name: Package Helm Chart
           run: |
@@ -206,12 +203,7 @@ jobs:
 
         - name: Move Helm Package to Repo & Update Index
           run: |
-            ls
             mv spacecapybara-chart-*.tgz spacecapy-helm-chart/
-            echo "__________________DEBUG___________________"
-            pwd
-            ls
-            echo "__________________DEBUG___________________"
             cd spacecapy-helm-chart
             helm repo index . --url https://AlexandraFefler.github.io/spacecapy-helm-chart
             git add .
@@ -220,7 +212,7 @@ jobs:
 
   cleanup-old-helm-charts:
     runs-on: ubuntu-latest
-    needs: build-and-publish-helm  # Runs after Helm chart is published
+    needs: build-and-publish-helm  # Runs separately, only after Helm chart is published
 
     steps:
       - name: Move to Safe Directory
@@ -335,7 +327,6 @@ jobs:
         run: |
           cd tf-to-gke
           terraform apply --auto-approve
-          echo "_____________________done_______________________"
 
       - name: Extract GKE Cluster Information
         id: get-gke-info
@@ -347,13 +338,10 @@ jobs:
           ZONE=$(terraform output -raw zone | awk -F'::debug::stdout: ' '{print $2}' | awk -F' ::debug::stderr:' '{print $1}' | tr -d '\r' | xargs)
           PROJECT_ID=$(terraform output -raw project_id | awk -F'::debug::stdout: ' '{print $2}' | awk -F' ::debug::stderr:' '{print $1}' | tr -d '\r' | xargs)
 
-          echo "__________The passed details from output:__________"
+          echo "The passed details from output:"
           echo "GKE_CLUSTER_NAME: $CLUSTER_NAME"
-          echo "__________________b o n k___________________"
           echo "GKE_ZONE: $ZONE"
-          echo "__________________b o n k___________________"
           echo "GCP_PROJECT_ID: $PROJECT_ID"
-          echo "__________________b o n k___________________"
   
           # Store in Environment Variables (new method)
           echo "GKE_CLUSTER_NAME=$CLUSTER_NAME" >> $GITHUB_ENV
@@ -362,22 +350,6 @@ jobs:
       
       - name: Sleep to give the cluster time before deployment
         run: sleep 20
-
-      # - name: Get EC2 Public IP
-      #   id: get-ec2-ip
-      #   run: |
-      #     cd tf-to-gke
-      #     TERRAFORM_IP=$(terraform output -raw public_ip | awk 'match($0, /([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)/) {print substr($0, RSTART, RLENGTH); exit}')
-      #     echo "Extracted EC2_PUBLIC_IP: '$TERRAFORM_IP'"
-      #     echo "EC2_PUBLIC_IP=$TERRAFORM_IP" >> $GITHUB_ENV
-      #     echo "::set-output name=EC2_PUBLIC_IP::$TERRAFORM_IP"
-
-
-      # - name: Store EC2 Public IP as GitHub Actions Environment Variable
-      #   run: echo "EC2_PUBLIC_IP=${{ env.EC2_PUBLIC_IP }}" > $GITHUB_ENV
-      
-      # - name: Sleep to give the instance time to initialize before deployment
-      #   run: sleep 200
 
   gke-deployment:
     runs-on: ubuntu-latest
@@ -415,21 +387,6 @@ jobs:
           gcloud container clusters get-credentials $GKE_CLUSTER_NAME --zone $GKE_ZONE --project $GCP_PROJECT_ID
           kubectl cluster-info  # Debugging step to verify the connection
 
-      # - name: Get GKE Cluster Credentials
-      #   run: |
-      #     gcloud container clusters get-credentials automated-lodge-449109-b9-gke --region us-central1 --project automated-lodge-449109-b9
-      #     kubectl cluster-info  # Debugging step to verify the connection
-
-      # - name: Create init.sql from Secret
-      #   run: |
-      #     echo "${{ secrets.INIT_SQL }}" > init.sql
-      #     echo "Created init.sql from secret"
-
-      # - name: Create or Update ConfigMap for init.sql
-      #   run: |
-      #     kubectl create configmap init-sql-config --from-file=init.sql --namespace=default --dry-run=client -o yaml | kubectl apply -f -
-      #     echo "ConfigMap init-sql-config created/updated"
-
       - name: Add Helm Repository
         run: |
           helm repo add spacecapy https://AlexandraFefler.github.io/spacecapy-helm-chart
@@ -442,12 +399,6 @@ jobs:
             --set image.repository=${{ secrets.DOCKER_HUB_USERNAME }}/spacecapybara_app \
             --set image.tag=1.0.${{ github.run_number }} \
             --atomic
-        # --atomic flag for auto-rollback if helm deployment did't succeed. Gotta add a FAILURE CHECK here and if helm upgrade really didn't work, then catch that in the workflow and fail the whole pipeline with a proper message.
-
-      # - name: Deploy to GKE
-      #   run: |
-      #     kubectl apply -f k8sDeployment.yaml
-        # kubectl rollout status deployment/k8sdeployment -n YOUR_NAMESPACE
 
       - name: Install Prometheus
         run: |
@@ -466,17 +417,6 @@ jobs:
             --set adminPassword=admin \
             --set grafana.security.disableInitialAdminPasswordChange=true
         # might want to put admin password in a GHA secret later
-
-      # - name: Apply Custom Prometheus Config
-      #   run: |
-      #     kubectl apply -f prometheus-config.yaml
-      #   # add check if this is already applied ig (maybe by the config map it creates if it ddid run b4)
-
-      # - name: Restart Prometheus Server Pod
-      #   run: |
-      #     PROMETHEUS_POD=$(kubectl get pods -n monitoring -l app.kubernetes.io/name=prometheus -o jsonpath="{.items[0].metadata.name}")
-      #     kubectl delete pod $PROMETHEUS_POD -n monitoring
-
 
       - name: Get External IP of Space Capybara Service
         run: |
