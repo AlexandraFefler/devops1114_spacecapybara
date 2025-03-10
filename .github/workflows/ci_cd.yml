@@ -160,7 +160,7 @@ jobs:
             mkdir -p files
             echo "${{ secrets.INIT_SQL }}" > files/init.sql
             echo "Created files/init.sql from secret"
-            cat files/init.sql
+            cat files/init.sql # correct content exists
 
         - name: Update Chart Version
           run: |
@@ -200,6 +200,10 @@ jobs:
         - name: Package Helm Chart
           run: |
             cd spacecapybara-chart
+            echo "____________DEBUG____________"
+            pwd
+            ls
+            echo "____________DEBUG____________"
             helm package .
             mv spacecapybara-chart-*.tgz ../
 
