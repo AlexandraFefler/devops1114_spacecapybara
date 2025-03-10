@@ -160,6 +160,7 @@ jobs:
             mkdir -p files
             echo "${{ secrets.INIT_SQL }}" > files/init.sql
             echo "Created files/init.sql from secret"
+            cat files/init.sql
 
         - name: Update Chart Version
           run: |
