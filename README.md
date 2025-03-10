@@ -4,7 +4,7 @@
 Space Capybara is a cloud-native web application that displays images from a database and tracks visitor counts using Prometheus metrics. The project follows a modern DevOps approach, integrating Docker, Kubernetes (GKE), Helm, Terraform, GitHub Actions, and monitoring tools such as Prometheus and Grafana.
 
 ## Architecture and Workflow
-![CI/CD Workflow](Cleaning%20up.png)
+![Image](https://github.com/user-attachments/assets/9bb724b1-8d61-4475-bbf0-71d86c73458e)
 
 ### Key Features:
 - **Containerized Deployment:** Application runs in Docker containers managed via Kubernetes.
