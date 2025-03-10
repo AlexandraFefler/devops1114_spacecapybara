@@ -280,7 +280,7 @@ jobs:
             echo "✅ No cleanup needed. Less than or equal to 5 versions present."
           fi
 
-  gke-infrastructure-provision:
+  gke-infrastructure-provisioning:
     runs-on: ubuntu-latest
     needs: [build-and-push, test-container, build-and-publish-helm]
 
@@ -381,7 +381,7 @@ jobs:
 
   gke-deployment:
     runs-on: ubuntu-latest
-    needs: [build-and-push, test-container, build-and-publish-helm, gke-infrastructure-provision]
+    needs: [build-and-push, test-container, build-and-publish-helm, gke-infrastructure-provisioning]
 
     steps:
       - name: Check out repository
