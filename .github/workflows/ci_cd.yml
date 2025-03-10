@@ -39,14 +39,14 @@ jobs:
           cd app
           docker push $DOCKERHUB_USER/spacecapybara_app:${VERSION}
           
-      - name: Push Docker image to Docker Hub (as latest stable)
-        env:
-          DOCKERHUB_USER: ${{ secrets.DOCKER_HUB_USERNAME }}
-          VERSION: 1.0.${{ github.run_number }}
-        run: |
-          cd app
-          docker tag $DOCKERHUB_USER/spacecapybara_app:${VERSION} $DOCKERHUB_USER/spacecapybara_app:latest
-          docker push $DOCKERHUB_USER/spacecapybara_app:latest
+      # - name: Push Docker image to Docker Hub (as latest stable)
+      #   env:
+      #     DOCKERHUB_USER: ${{ secrets.DOCKER_HUB_USERNAME }}
+      #     VERSION: 1.0.${{ github.run_number }}
+      #   run: |
+      #     cd app
+      #     docker tag $DOCKERHUB_USER/spacecapybara_app:${VERSION} $DOCKERHUB_USER/spacecapybara_app:latest
+      #     docker push $DOCKERHUB_USER/spacecapybara_app:latest
 
       - name: Install jq
         run: |
@@ -104,6 +104,9 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+
       - name: Create required files
         run: |
           cd app
@@ -138,6 +141,15 @@ jobs:
         run: |
           cd app
           docker compose down
+
+      - name: Push Docker image to Docker Hub (as latest stable)
+        env:
+          DOCKERHUB_USER: ${{ secrets.DOCKER_HUB_USERNAME }}
+          VERSION: 1.0.${{ github.run_number }}
+        run: |
+          cd app
+          docker tag $DOCKERHUB_USER/spacecapybara_app:${VERSION} $DOCKERHUB_USER/spacecapybara_app:latest
+          docker push $DOCKERHUB_USER/spacecapybara_app:latest
 
 # TODO: push latest after test!! 
     
