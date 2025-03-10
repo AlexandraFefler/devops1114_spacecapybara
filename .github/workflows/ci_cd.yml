@@ -4,9 +4,9 @@ on:
   push:
     branches:
       - main
-    paths-ignore:
-      - 'spacecapybara-chart/Chart.yaml'  # Ignores changes to this file
-      - 'spacecapy-helm-chart/**'  # Ignores changes to the Helm repo
+  pull_request:  # ✅ Triggers on any pull request
+    branches:
+      - main  
 
 jobs:
 
