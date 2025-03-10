@@ -411,12 +411,15 @@ jobs:
       - name: Clone Helm Repository
         run: |
           git clone https://github.com/AlexandraFefler/spacecapy-helm-chart.git
-          
+          cd spacecapy-helm-chart
+
+      - name: Git auth
+        run: |
+          cd spacecapy-helm-chart
           git config user.name "AlexandraFefler"
           git config user.email "AlexandraFefler@users.noreply.github.com"
           git remote set-url origin https://x-access-token:${{ secrets.SPACECAPY_HELM_PAT }}@github.com/AlexandraFefler/spacecapy-helm-chart.git
 
-          cd spacecapy-helm-chart
 
       - name: List and Delete Old Helm Chart Files
         run: |
