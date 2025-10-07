@@ -2,7 +2,7 @@ apiVersion: v2
 name: spacecapybara-chart
 description: A Helm chart for deploying the Space Capybara application
 type: application
-version: 1.0.39
+version: 1.0.40
 maintainers:
   - name: Alexandra Fefler
     email: sasha.fefler@gmail.com
