@@ -1,31 +1,31 @@
 # Ignore Helm-specific files
-.DS_Store
+.DS_Store #######
 # Ignore version control directories
-.git/
-.gitignore
+.git/  #######
+.gitignore  #######
 # Ignore temporary files
-*.swp
-*.bak
-*.tmp
-*.log
-*.lock
-*.cache
+*.swp  #######
+*.bak  #######
+*.tmp  #######
+*.log  #######
+*.lock  #######
+*.cache  #######
 
 # Ignore OS-specific files
-Thumbs.db
-ehthumbs.db
-Desktop.ini
+Thumbs.db #######
+ehthumbs.db #######
+Desktop.ini #######
 
 # Ignore Python-related files
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-*.egg-info/
-*.venv
-.env
-.vscode/
-.idea/
+__pycache__/ #######
+*.pyc #######
+*.pyo #######
+*.pyd ####### 
+*.egg-info/ #######
+*.venv #######
+.env #######
+.vscode/ ####### 
+.idea/ #######
 
 # Ignore Helm-related files
 # Avoid including old chart packages in new releases
@@ -33,30 +33,30 @@ __pycache__/
 helm-test-logs/
 
 # Ignore Docker-related files
-.dockerignore
-docker-compose.yaml
-Dockerfile
+.dockerignore #######
+docker-compose.yaml #######
+Dockerfile #######
 
 # Ignore secrets
-secrets.env
-secrets.yaml
-*.key
-*.pem
+secrets.env ####### probably wouldn't work if secret.yaml was included. Should it be included as good practice though? hm  
+secrets.yaml #######
+*.key #######
+*.pem #######
 
 # Ignore database dumps or migrations
-*.sql
-migrations/
+# *.sql ####### Fix. helm packages were ignoring the GHActions workflow created init.sql. Should ditch the whole init.sql concept at all but for now, just make it work again 
+migrations/ #######
 
 # Ignore CI/CD artifacts
 .github/
-*.tfstate
-terraform.tfvars
-terraform.tfstate.d/
-tfplan
+*.tfstate #######
+terraform.tfvars #######
+terraform.tfstate.d/ #######
+tfplan #######
 
 # Ignore unnecessary application files
-node_modules/
-npm-debug.log
-package-lock.json
-yarn.lock
-coverage/
+node_modules/ ####### ?
+npm-debug.log ####### ?
+package-lock.json ####### ?
+yarn.lock #######
+coverage/ ####### ? 

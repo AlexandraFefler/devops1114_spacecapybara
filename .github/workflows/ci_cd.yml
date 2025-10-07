@@ -310,7 +310,7 @@ jobs:
       - name: Configure gcloud CLI
         uses: google-github-actions/setup-gcloud@v2
         with:
-          project_id: automated-lodge-449109-b9
+          project_id: lateral-insight-471417-u9
 
       - name: Install GKE Auth Plugin
         run: |
@@ -384,7 +384,7 @@ jobs:
       - name: Configure gcloud CLI
         uses: google-github-actions/setup-gcloud@v2
         with:
-          project_id: automated-lodge-449109-b9
+          project_id: lateral-insight-471417-u9
 
       - name: Install GKE Auth Plugin
         run: |
@@ -397,12 +397,19 @@ jobs:
           GKE_CLUSTER_NAME: ${{ needs.gke-infrastructure-provisioning.outputs.GKE_CLUSTER_NAME }}
           GKE_ZONE: ${{ needs.gke-infrastructure-provisioning.outputs.GKE_ZONE }}
           GCP_PROJECT_ID: ${{ needs.gke-infrastructure-provisioning.outputs.GCP_PROJECT_ID }}
-        run: |
+          # The next command (get-credentials) gets connection details to the provisioned GKE(the cluster's API address, 
+          # some CA certificate, info on how to get auth token for kubectl commands (via plugin)),
+          # writes them into the kubeconfig file 
+          # and sets the context of any kubectl commands in this GHA runner (some lil' vm) to this specific cluster 
+        run: | 
           echo "Fetching GKE cluster credentials... "
           gcloud container clusters get-credentials $GKE_CLUSTER_NAME --zone $GKE_ZONE --project $GCP_PROJECT_ID
           kubectl cluster-info  # Debugging step to verify the connection
 
       - name: Add Helm Repository
+      # The helm github repo is using a Github Pages service that means that in this address: https://AlexandraFefler.github.io/spacecapy-helm-chart
+      # Is a server with https port open (= just with https connection) that hosts the files from this repo, in the github.io domain for GH pages
+      # Github Pages - a static hosting service, helm pulls the files (index.yaml, the .tgz packages) from that address via https 
         run: |
           helm repo add spacecapy https://AlexandraFefler.github.io/spacecapy-helm-chart
           helm repo update

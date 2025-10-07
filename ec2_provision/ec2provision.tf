@@ -1,3 +1,4 @@
+# a small step before doing CD with a k8s cluster - only provision of an ec2
 provider "aws" {
   region = "us-east-1"
 }

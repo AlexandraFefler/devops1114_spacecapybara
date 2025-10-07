@@ -1,3 +1,4 @@
+# If I'm not mistaken, I just broke this file into separate yamls for the helm chart 
 apiVersion: batch/v1
 kind: Job
 metadata:

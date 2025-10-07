@@ -1,3 +1,4 @@
+# a practice .tf - proviosioning an ec2 AND deploying the app in it 
 provider "aws" {
   region = "us-east-1"
 }

@@ -17,3 +17,7 @@ output "kubernetes_cluster_host" {
   value       = google_container_cluster.primary.endpoint
   description = "GKE Cluster Host"
 }
+
+# Basically outputs only need a name, a value, and maybe a description 
+# You can access a specific output by cli - terraform output <output_name>
+# Plus outputs can be accessedd by other modules as well, as inputs 

@@ -1,3 +1,4 @@
+------- Irrelevant -------
 1. Apply infrastructure (only gke related, *without* the node pool resource cuz it makes problems):
 
     terraform apply \
