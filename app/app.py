@@ -8,7 +8,7 @@ app = Flask(__name__)
 
 DB_HOST = os.getenv("MYSQL_HOST", "db")  # Matches the service name in docker-compose.yml
 DB_PORT = int(os.getenv("MYSQL_PORT", 3306))  # Internal MySQL port
-DB_USER = os.getenv("MYSQL_USER", "user")
+DB_USER = os.getenv("MYSQL_USER", "user1")
 DB_PASSWORD = os.getenv("MYSQL_PASSWORD", "password")
 DB_NAME = os.getenv("MYSQL_DATABASE", "mydatabase")
 
