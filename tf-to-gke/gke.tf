@@ -101,7 +101,7 @@ resource "google_container_node_pool" "primary_nodes" {
 
 lifecycle {
     ignore_changes = [
-      node_count,                  # Ignore manual scaling
+      # node_count,                  # Ignore manual scaling
       version,                      # Prevent version drift
       node_config[0].machine_type,   # Avoid unwanted updates to machine type
       node_config[0].disk_size_gb,   # Ignore disk size changes
