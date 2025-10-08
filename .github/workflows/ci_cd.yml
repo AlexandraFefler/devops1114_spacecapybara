@@ -27,6 +27,7 @@ jobs:
         env:
           DOCKERHUB_USER: ${{ secrets.DOCKER_HUB_USERNAME }}
           VERSION: 1.0.${{ github.run_number }}
+          MYSQL_USER: user2 #####################################
         run: |
           cd app
           docker build -t $DOCKERHUB_USER/spacecapybara_app:${VERSION} .
@@ -105,14 +106,14 @@ jobs:
           echo "${{ secrets.INIT_SQL }}" > init.sql
 
       - name: Run Docker Compose
-        env:
-          DOCKERHUB_USER: ${{ secrets.DOCKER_HUB_USERNAME }}
-          VERSION: 1.0.${{ github.run_number }}
+        # env:
+        #   DOCKERHUB_USER: ${{ secrets.DOCKER_HUB_USERNAME }
+        #   VERSION: 1.0.${{ github.run_number }
         run: |
           cd app
           run: |
-          echo "DOCKERHUB_USER=${DOCKERHUB_USER}" >> .env  # Inject variables into .env
-          echo "VERSION=${VERSION}" >> .env  # Inject variables into .env
+          echo "DOCKERHUB_USER=${{ secrets.DOCKER_HUB_USERNAME }}" >> .env  # Inject variables into .env
+          echo "VERSION=1.0.${{ github.run_number }}" >> .env  # Inject variables into .env
           cat .env  # Debugging step to verify environment variables
           docker compose up -d --force-recreate
       
@@ -420,7 +421,8 @@ jobs:
             --namespace default \
             --set image.repository=${{ secrets.DOCKER_HUB_USERNAME }}/spacecapybara_app \
             --set image.tag=1.0.${{ github.run_number }} \
-            --atomic
+            
+      #--atomic
 
       - name: Install Prometheus
         run: |
