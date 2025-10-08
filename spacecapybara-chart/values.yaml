@@ -8,7 +8,7 @@ image:
 mysql:
   rootPassword: "admin" # better put this in a secret too, next
   database: "mydatabase"
-  user: "user"
+  user: "user3"
   password: "password"
 
 appService:

@@ -17,9 +17,10 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Create .env file
-        run: echo "${{ secrets.ENV_FILE }}" > .env
-
+      - name: Create .env file # For some reason, I'm creating a .env in the repo root (outside of /app)
+        run: echo "${{ secrets.ENV_FILE }}" > .env # Why create it in repo root if it's not used in the image anyway? (like it should for sec)
+      # Summ - I think this is not used anyway in this job so delete it 
+      
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
 
@@ -420,9 +421,11 @@ jobs:
           helm upgrade --install spacecapybara-rel spacecapy/spacecapybara-chart \
             --namespace default \
             --set image.repository=${{ secrets.DOCKER_HUB_USERNAME }}/spacecapybara_app \
-            --set image.tag=1.0.${{ github.run_number }} \
+            --set image.tag=1.0.${{ github.run_number }}
+
             
-      #--atomic
+      # --set image.tag=1.0.${{ github.run_number } \
+      #       --atomic
 
       - name: Install Prometheus
         run: |
