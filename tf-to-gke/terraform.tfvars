@@ -1,3 +1,4 @@
 project_id = "lateral-insight-471417-u9"
-zone = "us-central1-b"
+# originally zone was b
+zone = "us-central1-a"
 region = "us-central1"

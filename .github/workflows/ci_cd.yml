@@ -312,7 +312,7 @@ jobs:
       - name: Configure gcloud CLI
         uses: google-github-actions/setup-gcloud@v2
         with:
-          project_id: lateral-insight-471417-u9
+          project_id: ${{ vars.GCP_PROJECT_ID }}
 
       - name: Install GKE Auth Plugin
         run: |
@@ -341,6 +341,10 @@ jobs:
           terraform init
 
       - name: Apply Terraform Configuration
+        env:
+          TF_VAR_project_id: ${{ vars.GCP_PROJECT_ID }}
+          TF_VAR_region: ${{ vars.GCP_REGION }}
+          TF_VAR_zone: ${{ vars.GCP_ZONE }}
         run: |
           cd tf-to-gke
           terraform apply --auto-approve
@@ -386,7 +390,7 @@ jobs:
       - name: Configure gcloud CLI
         uses: google-github-actions/setup-gcloud@v2
         with:
-          project_id: lateral-insight-471417-u9
+          project_id: ${{ vars.GCP_PROJECT_ID }}
 
       - name: Install GKE Auth Plugin
         run: |
