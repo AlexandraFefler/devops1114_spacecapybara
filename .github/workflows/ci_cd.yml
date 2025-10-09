@@ -336,6 +336,10 @@ jobs:
           terraform_version: 1.10.4
 
       - name: Initialize Terraform
+        env:
+          TF_VAR_project_id: ${{ vars.GCP_PROJECT_ID }}
+          TF_VAR_region: ${{ vars.GCP_REGION }}
+          TF_VAR_zone: ${{ vars.GCP_ZONE }}
         run: |
           cd tf-to-gke
           terraform init
@@ -445,7 +449,7 @@ jobs:
           helm repo update
           helm upgrade --install grafana grafana/grafana \
             --namespace monitoring \
-            --set adminPassword=admin \
+            --set adminPassword=${{ secrets.GRAFANA_ADMIN_PASSWORD }} \
             --set grafana.security.disableInitialAdminPasswordChange=true
         # might want to put admin password in a GHA secret later
 
