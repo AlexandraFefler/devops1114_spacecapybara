@@ -5,7 +5,7 @@ image:
   repository: sashafefler/spacecapybara_app
   tag: latest # placeholder, when deploying on cluster - always setting this to the specific built and tested version
 
-mysql:
+mysql: #the actual env vars running on the cluster. The .env isn't used anywhere really besides the random test-container job, and even there could be GH secrets 
   rootPassword: "admin" # better put this in a secret too, next
   database: "mydatabase"
   user: "user3"
